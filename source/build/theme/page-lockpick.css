@@ -1,0 +1,113 @@
+/* Lockpick (jail page): HUD, settings drawer, feed chips, odds meters and the sidebar heat badge.
+   Odds bands keep their meaning: good = green, mid = amber, bad = rose. */
+:root[data-tucc-theme="on"]{--lp-bg:var(--tucc-bg);--lp-card:var(--tucc-s1);--lp-raise:var(--tucc-s3);--lp-line:var(--tucc-line);--lp-text:var(--tucc-text);--lp-dim:var(--tucc-dim);
+  --lp-good:var(--tucc-good);--lp-mid:var(--tucc-warn);--lp-bad:var(--tucc-bad);--lp-brass:var(--tucc-accent);--lp-brass-dk:var(--tucc-accent-fill);--lp-num:var(--tucc-mono)}
+:root[data-tucc-theme="on"] .lp-ui{font-family:var(--tucc-font);font-size:var(--tucc-fs);line-height:1.4;color:var(--tucc-text);color-scheme:dark}
+:root[data-tucc-theme="on"] .lp-ui button,:root[data-tucc-theme="on"] .lp-ui input,:root[data-tucc-theme="on"] .lp-ui select{font-family:var(--tucc-font)}
+:root[data-tucc-theme="on"] .lp-hud{background:var(--tucc-bg);border-color:var(--tucc-line);border-radius:var(--tucc-r);box-shadow:none}
+:root[data-tucc-theme="on"] .lp-brand{color:var(--tucc-accent)}
+:root[data-tucc-theme="on"] .lp-brand b{color:var(--tucc-text);font-size:13px;font-weight:700}
+:root[data-tucc-theme="on"] .lp-gauge-val b,:root[data-tucc-theme="on"] .lp-stats dd,:root[data-tucc-theme="on"] .lp-summary b{font-family:var(--tucc-mono);font-variant-numeric:tabular-nums}
+:root[data-tucc-theme="on"] .lp-gauge-val small{font-size:var(--tucc-fs-sm);letter-spacing:0;color:var(--tucc-muted);line-height:1.3}
+:root[data-tucc-theme="on"] .lp-stats dt{font-size:var(--tucc-fs-sm);letter-spacing:.04em;color:var(--tucc-muted)}
+:root[data-tucc-theme="on"] .lp-ib{color:var(--tucc-muted)}
+:root[data-tucc-theme="on"] .lp-ib:hover{background:var(--tucc-s3);color:var(--tucc-text)}
+:root[data-tucc-theme="on"] .lp-settings-open .lp-tools [data-act="settings"]{background:var(--tucc-accent-soft);color:var(--tucc-accent)}
+
+/* Best Bust = primary (red fill, white text); Best Bail = secondary; no bail under cap = rose */
+:root[data-tucc-theme="on"] .lp-go,:root[data-tucc-theme="on"] .lp-go-mini{background:var(--tucc-accent-fill);border:1px solid var(--tucc-accent-fill);color:var(--tucc-accent-ink);box-shadow:none;border-radius:var(--tucc-r2)}
+:root[data-tucc-theme="on"] .lp-go:hover,:root[data-tucc-theme="on"] .lp-go-mini:hover{background:var(--tucc-accent-fill-hover);filter:none}
+:root[data-tucc-theme="on"] .lp-go-main b{background:rgba(0,0,0,.25);font-family:var(--tucc-mono)}
+:root[data-tucc-theme="on"] .lp-go-sub{font-size:var(--tucc-fs-sm);opacity:1}
+:root[data-tucc-theme="on"] .lp-go.lp-go-bail,:root[data-tucc-theme="on"] .lp-go-mini.lp-go-mini-bail{background:var(--tucc-s2) !important;border-color:var(--tucc-line) !important;color:var(--tucc-text) !important}
+:root[data-tucc-theme="on"] .lp-go.lp-go-bail:hover,:root[data-tucc-theme="on"] .lp-go-mini.lp-go-mini-bail:hover{border-color:var(--tucc-accent) !important}
+:root[data-tucc-theme="on"] .lp-go-bail .lp-go-main b{background:var(--tucc-s3)}
+:root[data-tucc-theme="on"] .lp-go-bail .lp-go-sub{color:var(--tucc-muted)}
+:root[data-tucc-theme="on"] .lp-go-bail svg{color:var(--tucc-good)}
+:root[data-tucc-theme="on"] .lp-go.lp-go-bail.lp-go-none,:root[data-tucc-theme="on"] .lp-go-mini.lp-go-mini-bail.lp-go-none{background:var(--tucc-s2) !important;border-color:rgba(253,164,175,.55) !important;color:var(--tucc-bad) !important}
+:root[data-tucc-theme="on"] .lp-go-bail.lp-go-none .lp-go-sub{color:var(--tucc-bad)}
+
+/* switches */
+:root[data-tucc-theme="on"] .lp-sw{font-size:var(--tucc-fs-sm);color:var(--tucc-muted)}
+:root[data-tucc-theme="on"] .lp-sw i{background:var(--tucc-line2)}
+:root[data-tucc-theme="on"] .lp-sw input:checked + i{background:var(--tucc-accent-fill)}
+:root[data-tucc-theme="on"] .lp-sw input:checked ~ span{color:var(--tucc-text)}
+:root[data-tucc-theme="on"] .lp-sw input:focus-visible + i{outline-color:var(--tucc-accent)}
+:root[data-tucc-theme="on"] .lp-cap{color:var(--tucc-accent)}
+
+/* feed: alert and result chips */
+:root[data-tucc-theme="on"] .lp-alert{background:var(--tucc-bad-soft);color:var(--tucc-bad);font-size:var(--tucc-fs-sm)}
+:root[data-tucc-theme="on"] .lp-link{color:var(--tucc-accent);font-size:var(--tucc-fs-sm)}
+:root[data-tucc-theme="on"] .lp-alert .lp-link{color:var(--tucc-text);text-decoration:underline}
+:root[data-tucc-theme="on"] .lp-toast{background:var(--tucc-s2);border-color:var(--tucc-line);color:var(--tucc-text);font-family:var(--tucc-font);font-size:var(--tucc-fs-sm)}
+:root[data-tucc-theme="on"] .lp-t-note{border-color:color-mix(in srgb,var(--tucc-accent) 50%,transparent)}
+:root[data-tucc-theme="on"] .lp-t-info{border-color:var(--tucc-line2)}
+:root[data-tucc-theme="on"] .lp-toast.lp-t-good{border-color:rgba(74,222,128,.5)}
+:root[data-tucc-theme="on"] .lp-toast.lp-t-bad{border-color:rgba(251,191,36,.5)}
+:root[data-tucc-theme="on"] .lp-toast.lp-t-jail{border-color:rgba(253,164,175,.6)}
+
+/* settings drawer: s1 strip, s2 cards, s1 inputs */
+:root[data-tucc-theme="on"] .lp-settings{background:var(--tucc-s1);border-top-color:var(--tucc-line)}
+:root[data-tucc-theme="on"] .lp-summary div,:root[data-tucc-theme="on"] .lp-card2,:root[data-tucc-theme="on"] .lp-tos-row{background:var(--tucc-s2);border-color:var(--tucc-line)}
+:root[data-tucc-theme="on"] .lp-summary small{font-size:var(--tucc-fs-sm);letter-spacing:.04em;color:var(--tucc-muted)}
+:root[data-tucc-theme="on"] .lp-tabs{border-bottom-color:var(--tucc-line)}
+:root[data-tucc-theme="on"] .lp-tabs button{color:var(--tucc-muted);font-size:13px}
+:root[data-tucc-theme="on"] .lp-tabs button:hover{color:var(--tucc-text)}
+:root[data-tucc-theme="on"] .lp-tabs button.on{color:var(--tucc-accent);border-bottom-color:var(--tucc-accent)}
+:root[data-tucc-theme="on"] .lp-row{border-bottom-color:var(--tucc-line)}
+:root[data-tucc-theme="on"] .lp-row-l{color:var(--tucc-text)}
+:root[data-tucc-theme="on"] .lp-row-l small,:root[data-tucc-theme="on"] .lp-note,:root[data-tucc-theme="on"] .lp-bars span{font-size:var(--tucc-fs-sm);color:var(--tucc-muted)}
+:root[data-tucc-theme="on"] .lp-range input{accent-color:var(--tucc-accent-fill)}
+:root[data-tucc-theme="on"] .lp-range output,:root[data-tucc-theme="on"] .lp-bars b{font-family:var(--tucc-mono);font-variant-numeric:tabular-nums;color:var(--tucc-text)}
+:root[data-tucc-theme="on"] .lp-row select,:root[data-tucc-theme="on"] .lp-num,:root[data-tucc-theme="on"] .lp-input{background:var(--tucc-s1);color:var(--tucc-text);border-color:var(--tucc-line);border-radius:var(--tucc-r2)}
+:root[data-tucc-theme="on"] .lp-num,:root[data-tucc-theme="on"] .lp-input{font-family:var(--tucc-mono)}
+:root[data-tucc-theme="on"] .lp-row select:focus,:root[data-tucc-theme="on"] .lp-num:focus,:root[data-tucc-theme="on"] .lp-input:focus{border-color:var(--tucc-accent);outline:none}
+:root[data-tucc-theme="on"] .lp-ui ::placeholder{color:var(--tucc-dim);opacity:1}
+:root[data-tucc-theme="on"] .lp-btn{background:var(--tucc-accent-fill);border-color:var(--tucc-accent-fill);color:var(--tucc-accent-ink);border-radius:var(--tucc-r2);font-size:13px}
+:root[data-tucc-theme="on"] .lp-btn:hover{background:var(--tucc-accent-fill-hover);filter:none}
+:root[data-tucc-theme="on"] .lp-btn.lp-btn-ghost{background:var(--tucc-s2);border-color:var(--tucc-line);color:var(--tucc-text)}
+:root[data-tucc-theme="on"] .lp-btn.lp-btn-ghost:hover{border-color:var(--tucc-accent)}
+:root[data-tucc-theme="on"] .lp-btn.lp-btn-danger{background:var(--tucc-s2);border-color:rgba(253,164,175,.55);color:var(--tucc-bad)}
+:root[data-tucc-theme="on"] .lp-btn.lp-btn-danger:hover{background:var(--tucc-bad-soft)}
+:root[data-tucc-theme="on"] .lp-btn.lp-armed{background:var(--tucc-bad);border-color:var(--tucc-bad);color:#111113}
+:root[data-tucc-theme="on"] .lp-keystate{font-size:var(--tucc-fs-sm)}
+:root[data-tucc-theme="on"] .lp-keystate.lp-ok{background:var(--tucc-good-soft);color:var(--tucc-good)}
+:root[data-tucc-theme="on"] .lp-keystate.lp-bad{background:var(--tucc-bad-soft);color:var(--tucc-bad)}
+:root[data-tucc-theme="on"] .lp-bars i{background:var(--tucc-s3)}
+:root[data-tucc-theme="on"] .lp-bars em{background:var(--tucc-accent)}
+:root[data-tucc-theme="on"] .lp-bars em.lp-act{background:var(--tucc-good)}
+:root[data-tucc-theme="on"] .lp-tos{font-size:var(--tucc-fs-sm)}
+:root[data-tucc-theme="on"] .lp-tos-cap{font-size:var(--tucc-fs-sm);letter-spacing:.04em;color:var(--tucc-muted)}
+:root[data-tucc-theme="on"] .lp-tos-row span{color:var(--tucc-text)}
+:root[data-tucc-theme="on"] .lp-tos-row span:first-child{color:var(--tucc-muted);border-right-color:var(--tucc-line)}
+
+/* odds meters in Torn's prisoner rows */
+:root[data-tucc-theme="on"] .lp-meter{background:var(--tucc-s1);border:1px solid var(--tucc-line);border-radius:6px;line-height:16px}
+:root[data-tucc-theme="on"] .lp-pins i{background:var(--tucc-line2)}
+:root[data-tucc-theme="on"] .lp-meter b{font:700 12px var(--tucc-mono);font-variant-numeric:tabular-nums;color:var(--tucc-text)}
+:root[data-tucc-theme="on"] .lp-m-good .lp-pins i.on{background:var(--tucc-good)}
+:root[data-tucc-theme="on"] .lp-m-mid .lp-pins i.on{background:var(--tucc-warn)}
+:root[data-tucc-theme="on"] .lp-m-bad .lp-pins i.on{background:var(--tucc-bad)}
+:root[data-tucc-theme="on"] .lp-m-good b{color:var(--tucc-good)}
+:root[data-tucc-theme="on"] .lp-m-mid b{color:var(--tucc-warn)}
+:root[data-tucc-theme="on"] .lp-m-bad b{color:var(--tucc-bad)}
+:root[data-tucc-theme="on"] .lp-meter.lp-untested{opacity:1;border-color:var(--tucc-line2)}
+:root[data-tucc-theme="on"] ul.user-info-list-wrap > li a.lp-bail-ok{box-shadow:inset 0 -2px 0 var(--tucc-good)}
+:root[data-tucc-theme="on"] ul.user-info-list-wrap > li.lp-best{box-shadow:inset 3px 0 0 var(--tucc-accent);background-image:linear-gradient(90deg,var(--tucc-accent-soft),transparent 45%)}
+:root[data-tucc-theme="on"] ul.user-info-list-wrap > li.lp-best .lp-meter{border-color:color-mix(in srgb,var(--tucc-accent) 70%,transparent)}
+@keyframes tuccLpFlash{0%{background-color:color-mix(in srgb,var(--tucc-accent) 40%,transparent)}100%{background-color:transparent}}
+:root[data-tucc-theme="on"] ul.user-info-list-wrap > li.lp-flash{animation-name:tuccLpFlash}
+
+/* heat badge on Torn's sidebar Jail row */
+:root[data-tucc-theme="on"] .lp-badge{background:var(--tucc-s1);border:1px solid var(--tucc-line);line-height:16px}
+:root[data-tucc-theme="on"] .lp-badge b{font:700 12px var(--tucc-mono);font-variant-numeric:tabular-nums;color:var(--tucc-text)}
+:root[data-tucc-theme="on"] .lp-badge-hot{border-color:rgba(253,164,175,.7)}
+:root[data-tucc-theme="on"] .lp-badge-hot b{color:var(--tucc-bad)}
+
+/* Phones: Lockpick shrinks its compact line to 11px at 700px and below; keep 12px minimum */
+@media (max-width:700px){:root[data-tucc-theme="on"] .lp-ui .lp-mini-text{font-size:12px !important}}
+:root[data-tucc-theme="on"] .lp-go.lp-go-ok,:root[data-tucc-theme="on"] .lp-go-mini.lp-go-ok,:root[data-tucc-theme="on"] .lp-go.lp-go-bail.lp-go-ok,:root[data-tucc-theme="on"] .lp-go-mini.lp-go-mini-bail.lp-go-ok{background:#15803d !important;border-color:#166534 !important;color:#fff !important}
+:root[data-tucc-theme="on"] .lp-go.lp-go-ok:hover,:root[data-tucc-theme="on"] .lp-go-mini.lp-go-ok:hover{background:#166534 !important}
+:root[data-tucc-theme="on"] .lp-go.lp-go-ok .lp-go-sub,:root[data-tucc-theme="on"] .lp-go.lp-go-ok svg{color:#fff !important}
+:root[data-tucc-theme="on"] .lp-refresh{background:var(--tucc-s2) !important;border:1px solid var(--tucc-line) !important;color:var(--tucc-text) !important;border-radius:var(--tucc-r2) !important;font:600 12px/16px var(--tucc-font) !important}
+:root[data-tucc-theme="on"] .lp-refresh:hover{border-color:var(--tucc-accent) !important}

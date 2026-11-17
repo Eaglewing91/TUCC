@@ -1,0 +1,21 @@
+/* Medal Detector's own row and goal list in Torn's sidebar. The row uses Torn's own sidebar classes, so it
+   already matches Torn. The goal list keeps Medal Detector's meaning (daily / lifetime / done) but takes
+   theme colours, 12px text, and darker shades on Torn's light sidebar so it stays readable there too.
+   The script writes these colours inline, so the selectors match its inline styles. */
+:root[data-tucc-theme="on"] #mh-sidebar-goals{font-size:12px !important;line-height:1.35 !important}
+:root[data-tucc-theme="on"] #mh-sidebar-goals span[style*="opacity:.85"]{opacity:1 !important}
+:root[data-tucc-theme="on"] #mh-sidebar-goals [style*="opacity:.85"]{opacity:1 !important}
+:root[data-tucc-theme="on"] #mh-sidebar-goals div[style*="height:3px"]{height:4px !important}
+/* Torn dark mode: theme tokens */
+:root[data-tucc-theme="on"] body.dark-mode #mh-sidebar-goals [style*="background:#c8a24c"]{background:var(--tucc-accent-fill) !important}
+:root[data-tucc-theme="on"] body.dark-mode #mh-sidebar-goals [style*="background:#7d97d6"]{background:var(--tucc-info) !important}
+:root[data-tucc-theme="on"] body.dark-mode #mh-sidebar-goals [style*="background:#7cbf5a"]{background:var(--tucc-good) !important}
+:root[data-tucc-theme="on"] body.dark-mode #mh-sidebar-goals [style*="color:#7cbf5a"]{color:var(--tucc-good) !important}
+/* Torn light mode: same meanings, shades that pass 4.5:1 on a light sidebar */
+:root[data-tucc-theme="on"] body:not(.dark-mode) #mh-sidebar-goals [style*="background:#c8a24c"]{background:var(--tucc-accent-fill-hover) !important}
+:root[data-tucc-theme="on"] body:not(.dark-mode) #mh-sidebar-goals [style*="background:#7d97d6"]{background:#1d4ed8 !important}
+:root[data-tucc-theme="on"] body:not(.dark-mode) #mh-sidebar-goals [style*="background:#7cbf5a"]{background:#15803d !important}
+:root[data-tucc-theme="on"] body:not(.dark-mode) #mh-sidebar-goals [style*="color:#7cbf5a"]{color:#15803d !important}
+/* [open] link: theme red (Torn dark mode) / dark red (light mode) */
+:root[data-tucc-theme="on"] body.dark-mode #mh-sidebar-entry a{color:var(--tucc-accent) !important}
+:root[data-tucc-theme="on"] body:not(.dark-mode) #mh-sidebar-entry a{color:var(--tucc-accent-fill-hover) !important}

@@ -1,0 +1,33 @@
+/* Torn Spectrum: only its own settings panel and button. Overlay, ruler, colour layers and the page font it applies are its accessibility feature and stay untouched. */
+:root[data-tucc-theme="on"] .tcl-panel{background:var(--tucc-bg) !important;color:var(--tucc-text) !important;border:1px solid var(--tucc-line) !important;border-radius:var(--tucc-r) !important;box-shadow:var(--tucc-shadow) !important;font-size:13.5px !important}
+:root[data-tucc-theme="on"] .tcl-panel h2{color:var(--tucc-text) !important;font-size:15px !important;font-weight:700 !important}
+:root[data-tucc-theme="on"] .tcl-panel h3{color:var(--tucc-muted) !important}
+:root[data-tucc-theme="on"] .tcl-head{background:var(--tucc-s1);border-bottom-color:var(--tucc-line) !important;border-radius:var(--tucc-r) var(--tucc-r) 0 0;padding:10px 14px !important}
+:root[data-tucc-theme="on"] .tcl-body section{border-bottom-color:var(--tucc-line) !important}
+:root[data-tucc-theme="on"] .tcl-foot{border-top-color:var(--tucc-line) !important;color:var(--tucc-muted) !important;background:var(--tucc-s1);border-radius:0 0 var(--tucc-r) var(--tucc-r)}
+:root[data-tucc-theme="on"] .tcl-foot b,:root[data-tucc-theme="on"] .tcl-foot strong{color:var(--tucc-text)}
+:root[data-tucc-theme="on"] .tcl-panel kbd{background:var(--tucc-s2) !important;border-color:var(--tucc-line2) !important;color:var(--tucc-text) !important;font:12px/1.4 var(--tucc-mono) !important;border-radius:4px !important}
+:root[data-tucc-theme="on"] .tcl-x{background:var(--tucc-s2) !important;border:1px solid var(--tucc-line) !important;color:var(--tucc-text) !important;width:30px !important;height:30px !important;font-size:18px !important}
+:root[data-tucc-theme="on"] .tcl-x:hover,:root[data-tucc-theme="on"] .tcl-x:focus-visible{border-color:var(--tucc-accent) !important;outline:none !important;background:var(--tucc-s3) !important}
+:root[data-tucc-theme="on"] .tcl-knob{background:var(--tucc-s3) !important;box-shadow:inset 0 0 0 1px var(--tucc-line2)}
+:root[data-tucc-theme="on"] .tcl-switch input:checked + .tcl-knob{background:var(--tucc-accent-fill) !important;box-shadow:none}
+:root[data-tucc-theme="on"] .tcl-switch input:focus-visible + .tcl-knob{outline-color:var(--tucc-accent) !important}
+:root[data-tucc-theme="on"] .tcl-card,:root[data-tucc-theme="on"] .tcl-chip{background:var(--tucc-s2) !important;border-color:var(--tucc-line) !important}
+:root[data-tucc-theme="on"] .tcl-card:hover,:root[data-tucc-theme="on"] .tcl-chip:hover{border-color:var(--tucc-line2) !important}
+:root[data-tucc-theme="on"] .tcl-card.tcl-checked,:root[data-tucc-theme="on"] .tcl-chip.tcl-checked{border-color:var(--tucc-accent) !important;background:var(--tucc-accent-soft) !important}
+:root[data-tucc-theme="on"] .tcl-card:has(input:focus-visible),:root[data-tucc-theme="on"] .tcl-chip:has(input:focus-visible){outline-color:var(--tucc-accent) !important}
+:root[data-tucc-theme="on"] .tcl-cname,:root[data-tucc-theme="on"] .tcl-chip,:root[data-tucc-theme="on"] .tcl-row,:root[data-tucc-theme="on"] .tcl-toggle{color:var(--tucc-text) !important}
+:root[data-tucc-theme="on"] .tcl-desc,:root[data-tucc-theme="on"] .tcl-hint,:root[data-tucc-theme="on"] .tcl-tl small,:root[data-tucc-theme="on"] .tcl-row output{color:var(--tucc-muted) !important}
+:root[data-tucc-theme="on"] .tcl-row output{font-variant-numeric:tabular-nums}
+:root[data-tucc-theme="on"] .tcl-row select{background:var(--tucc-s1) !important;color:var(--tucc-text) !important;border-color:var(--tucc-line) !important;border-radius:var(--tucc-r2) !important}
+:root[data-tucc-theme="on"] .tcl-row select:focus{outline:none;border-color:var(--tucc-accent) !important}
+:root[data-tucc-theme="on"] .tcl-row input[type=range]{accent-color:var(--tucc-accent-fill) !important}
+:root[data-tucc-theme="on"] .tcl-tbox{background:var(--tucc-s1) !important;border-color:var(--tucc-line2) !important}
+:root[data-tucc-theme="on"] .tcl-toggle input:checked + .tcl-tbox{background-color:var(--tucc-accent-fill) !important;border-color:var(--tucc-accent-fill) !important}
+:root[data-tucc-theme="on"] .tcl-toggle input:focus-visible + .tcl-tbox{outline-color:var(--tucc-accent) !important}
+:root[data-tucc-theme="on"] .tcl-btn{background:var(--tucc-s2) !important;color:var(--tucc-text) !important;border-color:var(--tucc-line) !important;border-radius:var(--tucc-r2) !important;font-weight:600}
+:root[data-tucc-theme="on"] .tcl-btn:hover,:root[data-tucc-theme="on"] .tcl-btn:focus-visible{border-color:var(--tucc-accent) !important;outline:none !important;background:var(--tucc-s3) !important}
+:root[data-tucc-theme="on"] .tcl-btn-ghost{background:transparent !important}
+:root[data-tucc-theme="on"] .tcl-fab{background:var(--tucc-s1) !important;color:var(--tucc-text) !important;border-color:var(--tucc-line2) !important}
+:root[data-tucc-theme="on"] .tcl-fab[data-active="1"]{border-color:var(--tucc-accent) !important}
+:root[data-tucc-theme="on"] .tcl-fab:focus-visible{outline-color:var(--tucc-accent) !important}

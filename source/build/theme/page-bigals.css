@@ -1,0 +1,6 @@
+/* Big Al's Watch: the "shop is open" banner at the top of the page, in your TUCC colour theme. */
+:root[data-tucc-theme="on"] #tucc-bigals-banner{background:var(--tucc-accent-fill) !important;color:var(--tucc-accent-ink) !important;font:600 13px/18px var(--tucc-font) !important;border-bottom:1px solid var(--tucc-accent) !important}
+:root[data-tucc-theme="on"] #tucc-bigals-banner a{color:var(--tucc-accent-ink) !important}
+:root[data-tucc-theme="on"] #tucc-bigals-banner button{border-radius:var(--tucc-r2) !important;font:600 12px/16px var(--tucc-font) !important}
+:root[data-tucc-theme="on"] #tucc-bigals-banner button:hover{background:var(--tucc-accent-fill-hover) !important}
+:root[data-tucc-theme="on"] #tucc-bigals-banner button:focus-visible,:root[data-tucc-theme="on"] #tucc-bigals-banner a:focus-visible{outline:2px solid #fff !important;outline-offset:2px}

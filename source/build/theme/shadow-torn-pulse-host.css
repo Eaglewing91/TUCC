@@ -1,0 +1,44 @@
+/* Torn Pulse (inside its shadow root): TUCC dark surfaces and red accent in both of Pulse's themes.
+   Pulse's own variables are remapped; energy, nerve and happy bars keep their colours.
+   Pulse's amber accent becomes the TUCC red; amber stays only as the warning colour. */
+.tp,.tp.theme-dark,.tp.theme-light{--font:var(--tucc-font);
+  --bg:var(--tucc-bg);--surface:var(--tucc-s1);--raised:var(--tucc-s2);--ink:var(--tucc-text);--ink2:var(--tucc-muted);
+  --muted:var(--tucc-dim);--line:var(--tucc-line);--track:var(--tucc-s3);
+  --accent:var(--tucc-accent);--accent-ink:var(--tucc-accent-ink);--accent-soft:var(--tucc-accent-soft);
+  --blue:var(--tucc-info);--blue-soft:var(--tucc-info-soft,rgba(147,197,253,.14));
+  --green:var(--tucc-good);--green-soft:var(--tucc-good-soft);--red:var(--tucc-bad);--red-soft:var(--tucc-bad-soft);
+  --amber:var(--tucc-warn);--amber-soft:var(--tucc-warn-soft);
+  --shadow:var(--tucc-shadow);--scrim:rgba(0,0,0,.5);color-scheme:dark;font-size:var(--tucc-fs)}
+.tp :focus-visible{outline-color:var(--tucc-accent)}
+/* launcher and primary buttons: red fill with white text */
+.launch{background:var(--tucc-accent-fill);color:var(--tucc-accent-ink)}
+.launch:hover{background:var(--tucc-accent-fill-hover)}
+.launch .badge{background:var(--tucc-s1);color:var(--tucc-text);font-size:12px;box-shadow:0 0 0 2px var(--tucc-accent-fill)}
+.btn{border-radius:var(--tucc-r2)}
+.btn:hover{border-color:var(--tucc-accent)}
+.btn.primary,.body a.btn.primary{background:var(--tucc-accent-fill);border-color:var(--tucc-accent-fill);color:var(--tucc-accent-ink)}
+.btn.primary:hover{background:var(--tucc-accent-fill-hover);border-color:var(--tucc-accent-fill-hover);filter:none}
+.iconbtn{border-radius:var(--tucc-r2)}
+.iconbtn:hover{border-color:var(--tucc-accent)}
+/* tabs */
+.tab{color:var(--tucc-muted)}
+.tab:hover{color:var(--tucc-text)}
+.tab.active{color:var(--tucc-text);border-bottom-color:var(--tucc-accent)}
+.tab.active .ic{color:var(--tucc-accent)}
+/* cards are s2, tiles inside them s3 */
+.card,.panel,.checks,.form .group,.more summary{background:var(--tucc-s2)}
+.nowgrid>div,.compare div,.bd{background:var(--tucc-s3)}
+.srow:hover td{background:var(--tucc-s3)}
+.card .badge{background:var(--tone-soft)}
+/* links */
+.note a,.body a,.linkbtn{color:var(--tucc-accent)}
+/* inputs */
+.form input[type=number],.form input[type=text],.form input[type=password],.form select,.wirow input[type=number]{background:var(--tucc-s1);border-color:var(--tucc-line);color:var(--tucc-text);border-radius:var(--tucc-r2)}
+.form input:focus,.form select:focus,.wirow input[type=number]:focus{border-color:var(--tucc-accent);box-shadow:0 0 0 3px var(--tucc-accent-soft)}
+.form input[type=checkbox],.wirow input[type=range],.tp input[type=radio]{accent-color:var(--tucc-accent-fill)}
+/* type: 12px minimum */
+.tag{font-size:12px}
+.tag.own{background:var(--tucc-s3)}
+
+/* ToS table cells had no colour of their own and inherited the page text colour */
+.tos td{color:var(--tucc-text) !important}

@@ -1,0 +1,42 @@
+/* Recruiting Mastered: settings panel + inline badges. The badges sit on Torn's own list (light or dark),
+   so each one gets a solid dark pill; WS tiers keep their meaning: rose = low, amber = mid, green = high, grey = not loaded */
+:root[data-tucc-theme="on"] #rm-panel{background:var(--tucc-bg) !important;color:var(--tucc-text) !important;border:1px solid var(--tucc-line) !important;border-radius:var(--tucc-r) !important;box-shadow:var(--tucc-shadow) !important;font:13.5px/1.45 var(--tucc-font) !important;padding:12px 14px !important}
+:root[data-tucc-theme="on"] #rm-panel .rm-head{margin:-12px -14px 10px !important;padding:10px 14px !important;background:var(--tucc-s1) !important;border-bottom:1px solid var(--tucc-line) !important;border-radius:var(--tucc-r) var(--tucc-r) 0 0}
+:root[data-tucc-theme="on"] #rm-panel .rm-head b{color:var(--tucc-text) !important;font-weight:700;font-size:14px}
+:root[data-tucc-theme="on"] #rm-panel button{background:var(--tucc-s2) !important;color:var(--tucc-text) !important;border:1px solid var(--tucc-line) !important;border-radius:var(--tucc-r2) !important;font:600 13px var(--tucc-font) !important}
+:root[data-tucc-theme="on"] #rm-panel button:hover{border-color:var(--tucc-accent) !important}
+:root[data-tucc-theme="on"] #rm-panel button:focus-visible{outline:2px solid var(--tucc-accent);outline-offset:2px}
+:root[data-tucc-theme="on"] #rm-panel button.rm-primary{background:var(--tucc-accent-fill) !important;border-color:var(--tucc-accent-fill) !important;color:var(--tucc-accent-ink) !important}
+:root[data-tucc-theme="on"] #rm-panel button.rm-primary:hover{background:var(--tucc-accent-fill-hover) !important;border-color:var(--tucc-accent-fill-hover) !important}
+:root[data-tucc-theme="on"] #rm-panel .rm-x{width:28px;height:28px;padding:0 !important;font-size:16px !important;line-height:26px !important}
+:root[data-tucc-theme="on"] #rm-panel input,:root[data-tucc-theme="on"] #rm-panel select{background:var(--tucc-s1) !important;color:var(--tucc-text) !important;border:1px solid var(--tucc-line) !important;border-radius:var(--tucc-r2) !important;font:13px var(--tucc-font) !important}
+:root[data-tucc-theme="on"] #rm-panel input::placeholder{color:var(--tucc-dim)}
+:root[data-tucc-theme="on"] #rm-panel input:focus,:root[data-tucc-theme="on"] #rm-panel select:focus{outline:none;border-color:var(--tucc-accent) !important}
+:root[data-tucc-theme="on"] #rm-panel a{color:var(--tucc-accent) !important}
+:root[data-tucc-theme="on"] #rm-panel .rm-status{background:var(--tucc-s2) !important;border:1px solid var(--tucc-line);border-radius:var(--tucc-r2) !important;color:var(--tucc-text) !important;font-variant-numeric:tabular-nums}
+:root[data-tucc-theme="on"] #rm-panel .rm-note{color:var(--tucc-warn) !important}
+:root[data-tucc-theme="on"] #rm-panel .rm-warn{background:var(--tucc-warn-soft) !important;border-color:rgba(251,191,36,.4) !important;color:var(--tucc-warn) !important;border-radius:var(--tucc-r2) !important}
+:root[data-tucc-theme="on"] #rm-panel .rm-access{color:var(--tucc-muted) !important}
+:root[data-tucc-theme="on"] #rm-panel .rm-access b{color:var(--tucc-good) !important}
+:root[data-tucc-theme="on"] #rm-panel h4{color:var(--tucc-muted) !important;font-size:12px !important;font-weight:700}
+:root[data-tucc-theme="on"] #rm-panel label{color:var(--tucc-muted) !important}
+:root[data-tucc-theme="on"] #rm-panel table.rm-tos{font-size:12px !important;line-height:1.35 !important}
+:root[data-tucc-theme="on"] #rm-panel .rm-tos th,:root[data-tucc-theme="on"] #rm-panel .rm-tos td{border:0 !important;border-bottom:1px solid var(--tucc-line) !important;padding:5px 6px !important}
+:root[data-tucc-theme="on"] #rm-panel .rm-tos th{background:transparent !important;color:var(--tucc-muted) !important}
+:root[data-tucc-theme="on"] #rm-panel .rm-tos td{color:var(--tucc-text) !important}
+:root[data-tucc-theme="on"] #rm-fab{background:var(--tucc-s1) !important;color:var(--tucc-accent) !important;border-color:var(--tucc-line2) !important;font-family:var(--tucc-font) !important}
+:root[data-tucc-theme="on"] #rm-fab:hover{border-color:var(--tucc-accent) !important}
+:root[data-tucc-theme="on"] #rm-fab.rm-alert::after{background:var(--tucc-accent-fill);box-shadow:0 0 0 2px var(--tucc-s1)}
+/* inline badges on Torn's list */
+:root[data-tucc-theme="on"] .ws-badge,:root[data-tucc-theme="on"] .ws-mail{border-radius:999px !important;font:600 12px/1.35 var(--tucc-font) !important;font-variant-numeric:tabular-nums;background:var(--tucc-s1) !important;border:1px solid var(--tucc-line2) !important}
+:root[data-tucc-theme="on"] .ws-low{color:var(--tucc-bad) !important;border-color:rgba(253,164,175,.5) !important}
+:root[data-tucc-theme="on"] .ws-mid{color:var(--tucc-warn) !important;border-color:rgba(251,191,36,.5) !important}
+:root[data-tucc-theme="on"] .ws-high{color:var(--tucc-good) !important;border-color:rgba(74,222,128,.5) !important}
+:root[data-tucc-theme="on"] .ws-na{color:var(--tucc-dim) !important}
+:root[data-tucc-theme="on"] .ws-streak{color:var(--tucc-warn) !important;border-left-color:var(--tucc-line2) !important}
+:root[data-tucc-theme="on"] .ws-streak.ws-old{opacity:1 !important;color:var(--tucc-dim) !important}
+:root[data-tucc-theme="on"] .ws-mail{color:var(--tucc-text) !important;font-size:13px !important;padding:1px 6px !important}
+:root[data-tucc-theme="on"] .ws-mail:hover,:root[data-tucc-theme="on"] .ws-badge.ws-action:hover{border-color:var(--tucc-accent) !important}
+:root[data-tucc-theme="on"] .ws-box{border-radius:4px !important;border:1px solid var(--tucc-line2) !important;background:var(--tucc-s1) !important}
+:root[data-tucc-theme="on"] .ws-box:hover{border-color:var(--tucc-accent) !important}
+:root[data-tucc-theme="on"] .ws-box.is-on{background:var(--tucc-good) !important;border-color:var(--tucc-good) !important;box-shadow:0 0 0 2px var(--tucc-good-soft) !important}

@@ -1,0 +1,17 @@
+/* Ranked Notes: the + on ranked war items and the note editor */
+:root[data-tucc-theme="on"] .twn-btn{background:var(--tucc-s2);border:1px solid var(--tucc-accent);border-radius:6px;color:var(--tucc-accent);font:700 13px/1 var(--tucc-font)}
+:root[data-tucc-theme="on"] .twn-btn:hover,:root[data-tucc-theme="on"] .twn-btn:focus-visible,:root[data-tucc-theme="on"] .twn-btn.has-note{background:var(--tucc-accent-fill);border-color:var(--tucc-accent-fill);color:var(--tucc-accent-ink)}
+:root[data-tucc-theme="on"] .twn-btn:focus-visible{outline:2px solid var(--tucc-accent);outline-offset:1px}
+:root[data-tucc-theme="on"] #twn-editor{background:var(--tucc-bg);color:var(--tucc-text);border:1px solid var(--tucc-line);border-top:2px solid var(--tucc-accent);border-radius:var(--tucc-r);box-shadow:var(--tucc-shadow);font:var(--tucc-fs)/1.45 var(--tucc-font);color-scheme:dark}
+:root[data-tucc-theme="on"] #twn-editor .twn-head b{color:var(--tucc-text);font-weight:700}
+:root[data-tucc-theme="on"] #twn-editor .twn-x{color:var(--tucc-muted);border-radius:6px}
+:root[data-tucc-theme="on"] #twn-editor .twn-x:hover{color:var(--tucc-text);background:var(--tucc-s3)}
+:root[data-tucc-theme="on"] #twn-editor textarea{background:var(--tucc-s1);color:var(--tucc-text);border:1px solid var(--tucc-line);border-radius:var(--tucc-r2);font:14px/1.45 var(--tucc-font)}
+:root[data-tucc-theme="on"] #twn-editor textarea::placeholder{color:var(--tucc-dim)}
+:root[data-tucc-theme="on"] #twn-editor textarea:focus{border-color:var(--tucc-accent)}
+:root[data-tucc-theme="on"] #twn-editor .twn-count{color:var(--tucc-dim);font-size:var(--tucc-fs-sm);font-variant-numeric:tabular-nums}
+:root[data-tucc-theme="on"] #twn-editor .twn-foot button{border-radius:var(--tucc-r2);font:600 13px var(--tucc-font)}
+:root[data-tucc-theme="on"] #twn-editor .twn-save{background:var(--tucc-accent-fill);border:1px solid var(--tucc-accent-fill);color:var(--tucc-accent-ink)}
+:root[data-tucc-theme="on"] #twn-editor .twn-save:hover{background:var(--tucc-accent-fill-hover)}
+:root[data-tucc-theme="on"] #twn-editor .twn-del{background:var(--tucc-s2);border:1px solid rgba(253,164,175,.55);color:var(--tucc-bad)}
+:root[data-tucc-theme="on"] #twn-editor .twn-del:hover{background:var(--tucc-bad-soft)}

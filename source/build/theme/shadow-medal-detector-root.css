@@ -1,0 +1,106 @@
+/* Medal Detector (inside its shadow root): TUCC dark + red. Brass accent -> red, status colours -> tokens. */
+.mh{--bg:var(--tucc-bg);--surface:var(--tucc-s2);--raised:var(--tucc-s3);--line:var(--tucc-line);--soft:var(--tucc-line);
+  --text:var(--tucc-text);--muted:var(--tucc-muted);--faint:var(--tucc-dim);
+  --brass:var(--tucc-accent);--brass-hi:var(--tucc-accent);--brass-bg:var(--tucc-accent-soft);
+  --done:var(--tucc-good);--done-bg:var(--tucc-good-soft);--bad:var(--tucc-bad);--bad-bg:var(--tucc-bad-soft);--blue:var(--tucc-info);
+  font-family:var(--tucc-font);font-size:var(--tucc-fs);line-height:1.45;color-scheme:dark}
+.num,.prog .v,.fig-n,.kv b,.tier .r,.pent .r,.nav .count,.seg .n,h3 .n{font-variant-numeric:tabular-nums}
+
+/* window: bg; header and side nav: s1; cards and lists: s2 */
+.backdrop{background:rgba(5,5,7,.7)}
+.modal{background:var(--tucc-bg);border-color:var(--tucc-line);border-radius:var(--tucc-r);box-shadow:var(--tucc-shadow)}
+.top,.nav{background:var(--tucc-s1)}
+.brand h1,.ph h2,h3,.pd h4,.empty b{font-weight:700;color:var(--tucc-text)}
+.mark{background:var(--tucc-accent-soft);color:var(--tucc-accent)}
+.updated{color:var(--tucc-dim)}
+.tool{color:var(--tucc-muted)}
+.tool:hover{background:var(--tucc-s3);color:var(--tucc-text)}
+.nav button{color:var(--tucc-muted)}
+.nav button:hover{background:var(--tucc-s3);color:var(--tucc-text)}
+.nav button[aria-current="page"]{background:var(--tucc-accent-soft);color:var(--tucc-text);box-shadow:inset 2px 0 0 var(--tucc-accent)}
+.nav button[aria-current="page"] .ic{color:var(--tucc-accent)}
+.nav .count,.nav .foot{font-size:var(--tucc-fs-sm);color:var(--tucc-dim)}
+.nav button[aria-current="page"] .count{color:var(--tucc-muted)}
+:focus-visible{outline-color:var(--tucc-accent)}
+
+/* lists and cards */
+.list,.board,.pick{background:var(--tucc-s2);border-color:var(--tucc-line)}
+.group-h{background:var(--tucc-s1);color:var(--tucc-muted)}
+button.row:hover,.pent:hover{background:var(--tucc-s3)}
+.st.part::after{background:var(--tucc-s2)}
+.st.done{color:#0b1a10}
+.st.icon{background:var(--tucc-s3);color:var(--tucc-muted)}
+.pill{background:var(--tucc-s3);color:var(--tucc-muted)}
+.pill.brass{color:var(--tucc-accent);background:var(--tucc-accent-soft)}
+.pill.done{color:var(--tucc-good);background:var(--tucc-good-soft)}
+.pent[aria-selected="true"]{background:var(--tucc-accent-soft);box-shadow:inset 2px 0 0 var(--tucc-accent)}
+.tier::before{background:var(--tucc-bg)}
+.tier.here{background:var(--tucc-accent-soft)}
+.pd{background:var(--tucc-s2)}
+.pl{background:var(--tucc-s2)}
+.pl-top{background:var(--tucc-s1)}
+
+/* buttons: primary red fill + white; secondary s2 + line border */
+.btn{border-radius:var(--tucc-r2);font-weight:600}
+.btn.primary{background:var(--tucc-accent-fill);color:var(--tucc-accent-ink);border:1px solid var(--tucc-accent-fill)}
+.btn.primary:hover{background:var(--tucc-accent-fill-hover);border-color:var(--tucc-accent-fill-hover)}
+.btn.secondary{background:var(--tucc-s2);color:var(--tucc-text);border:1px solid var(--tucc-line)}
+.btn.secondary:hover{border-color:var(--tucc-accent)}
+.btn.quiet{color:var(--tucc-accent)}
+.btn.quiet:hover{background:var(--tucc-accent-soft)}
+.btn.danger{color:var(--tucc-muted)}
+.btn.danger:hover{color:var(--tucc-bad);background:var(--tucc-bad-soft)}
+.sugg button{background:var(--tucc-s2);border-color:var(--tucc-line);color:var(--tucc-muted);border-radius:var(--tucc-r2)}
+.sugg button:hover{border-color:var(--tucc-accent);color:var(--tucc-text)}
+
+/* fields */
+input,select{background:var(--tucc-s1);color:var(--tucc-text);border-color:var(--tucc-line);border-radius:var(--tucc-r2);font-family:var(--tucc-font)}
+input:focus,select:focus{border-color:var(--tucc-accent)}
+input::placeholder{color:var(--tucc-dim);opacity:1}
+input:disabled{color:var(--tucc-muted)}
+input[type=checkbox],input[type=radio],input[type=range],.opt input{accent-color:var(--tucc-accent-fill)}
+.field .ic{color:var(--tucc-dim)}
+.seg{background:var(--tucc-s1);border-color:var(--tucc-line)}
+.seg button{color:var(--tucc-muted)}
+.seg button:hover{color:var(--tucc-text)}
+.seg button[aria-pressed="true"]{background:var(--tucc-accent-soft);color:var(--tucc-text);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--tucc-accent) 45%,transparent)}
+.seg .n{color:var(--tucc-dim)}
+.seg button[aria-pressed="true"] .n{color:var(--tucc-muted)}
+.opt{border-color:var(--tucc-line);background:var(--tucc-s2)}
+.opt:hover{border-color:var(--tucc-accent)}
+
+/* notes and detail */
+.note{background:var(--tucc-s3);color:var(--tucc-muted)}
+.note .ic{color:var(--tucc-dim)}
+.note.warn{color:var(--tucc-warn);background:var(--tucc-warn-soft)}
+.note.err{color:var(--tucc-bad);background:var(--tucc-bad-soft)}
+.note.warn b,.note.err b{color:inherit}
+.note.warn .link,.note.err .link{color:var(--tucc-text);text-decoration:underline}
+a.link{color:var(--tucc-accent)}
+.eta .bad,.keymsg.bad{color:var(--tucc-bad)}
+.keymsg.ok,.meta.done,.pent .r.done{color:var(--tucc-good)}
+
+/* goals, history: every label at least 12px */
+.grow label,.cells-x,.gfoot .meta{font-size:var(--tucc-fs-sm);color:var(--tucc-dim)}
+.gfoot .meta{color:var(--tucc-muted)}
+.cells i.n{background:rgba(253,164,175,.55)}
+.legend span:nth-child(2)::before{background:rgba(253,164,175,.55)}
+.cells i.p::after{background:rgba(255,255,255,.85)}
+
+/* settings table */
+table.tos td{border-top-color:var(--tucc-line)}
+table.tos td:first-child{color:var(--tucc-muted)}
+
+/* toast */
+.toast{background:var(--tucc-s1);color:var(--tucc-text);border:1px solid var(--tucc-line);border-left:3px solid var(--tucc-accent);border-radius:var(--tucc-r2);box-shadow:var(--tucc-shadow);font-family:var(--tucc-font);font-size:var(--tucc-fs)}
+.toast .ic{color:var(--tucc-good)}
+
+/* phones: nav labels stay at the 12px minimum */
+@media (max-width:760px){.nav button{font-size:var(--tucc-fs-sm)}.nav button[aria-current="page"]{box-shadow:inset 0 -2px 0 var(--tucc-accent)}}
+.tier .nm small{font-size:var(--tucc-fs-sm);color:var(--tucc-dim)}
+
+/* Floating button (shown when chosen in its settings, or on small screens): theme surface, red icon, 12px badge */
+.fab{background:var(--tucc-s1);border-color:var(--tucc-line)}
+.fab:hover{border-color:var(--tucc-accent)}
+.fab .badge{font-size:12px;min-width:20px;height:20px;border-radius:10px;background:var(--tucc-accent-fill);color:#fff}
+.fab .badge.ok{background:var(--tucc-good);color:#0b1f12}

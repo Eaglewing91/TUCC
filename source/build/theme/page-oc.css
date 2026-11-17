@@ -1,0 +1,34 @@
+/* OC Command Centre: banners, pills and boxes it draws onto Torn's own crimes list (outside its panels).
+   Status meanings stay (green join, amber wait, rose blocked/early, blue last-join, lavender exception); text 12px minimum. */
+:root[data-tucc-theme="on"] .occ-status{font-family:var(--tucc-font);font-size:12.5px;background:rgba(17,17,19,.95);border-color:var(--tucc-line2)}
+:root[data-tucc-theme="on"] .occ-status[data-state="join"],:root[data-tucc-theme="on"] .occ-status[data-state="stalled"]{border-color:var(--tucc-good);background:rgba(20,40,26,.95)}
+:root[data-tucc-theme="on"] .occ-status[data-state="wait"],:root[data-tucc-theme="on"] .occ-status[data-state="unknown"]{border-color:var(--tucc-warn);background:rgba(44,34,14,.95)}
+:root[data-tucc-theme="on"] .occ-status[data-state="blocked"]{border-color:var(--tucc-bad);background:rgba(52,22,26,.95)}
+:root[data-tucc-theme="on"] .occ-status[data-state="new"],:root[data-tucc-theme="on"] .occ-status[data-state="own"]{border-color:var(--tucc-line2);background:rgba(32,32,36,.95)}
+:root[data-tucc-theme="on"] .occ-status[data-state="exception"],:root[data-tucc-theme="on"] .occ-status[data-state="fallback"]{border-color:#c4b5fd;background:rgba(40,32,58,.95)}
+:root[data-tucc-theme="on"] .occ-status .occ-policy-banner,:root[data-tucc-theme="on"] .occ-status .occ-policy-text{font-size:12.5px}
+:root[data-tucc-theme="on"] .occ-status-sub .occ-policy-banner{font-size:12px}
+:root[data-tucc-theme="on"] .occ-status-sub .occ-early-join-banner,:root[data-tucc-theme="on"] .occ-status-sub .occ-last-join-banner[data-state="early"]{background:rgba(52,22,26,.8);color:var(--tucc-bad)}
+:root[data-tucc-theme="on"] .occ-status-sub .occ-last-join-banner{background:rgba(23,37,56,.8);color:var(--tucc-info)}
+:root[data-tucc-theme="on"] .occ-status .occ-wait-banner{color:var(--tucc-warn)}
+:root[data-tucc-theme="on"] .occ-needed-text,:root[data-tucc-theme="on"] .occ-success-display{font-size:12px;background:var(--tucc-s3);color:var(--tucc-text)}
+:root[data-tucc-theme="on"] .occ-success-display[data-projected="1"]{color:var(--tucc-muted)}
+:root[data-tucc-theme="on"] .occ-needed-text[data-level="amber"]{background:var(--tucc-warn-soft);color:var(--tucc-warn)}
+:root[data-tucc-theme="on"] .occ-needed-text[data-level="red"]{background:var(--tucc-bad-soft);color:var(--tucc-bad)}
+:root[data-tucc-theme="on"] .occ-needed-text[data-level="stalled"]{background:var(--tucc-accent-fill);color:#fff}
+:root[data-tucc-theme="on"] .occ-lock{font-size:12px}
+:root[data-tucc-theme="on"] .occ-lock[data-kind="wait"]{background:var(--tucc-warn-soft);color:var(--tucc-warn)}
+:root[data-tucc-theme="on"] .occ-lock-detail{font-size:12px;opacity:1}
+:root[data-tucc-theme="on"] .occ-weight-box .label{font-size:12px;opacity:1}
+:root[data-tucc-theme="on"] .occ-policy-text[data-state="join"],:root[data-tucc-theme="on"] .occ-policy-text[data-state="stalled"]{color:var(--tucc-good)}
+:root[data-tucc-theme="on"] .occ-policy-text[data-state="wait"],:root[data-tucc-theme="on"] .occ-policy-text[data-state="unknown"],:root[data-tucc-theme="on"] .occ-join-advice{color:var(--tucc-warn)}
+:root[data-tucc-theme="on"] .occ-policy-text[data-state="blocked"],:root[data-tucc-theme="on"] .occ-join-advice[data-state="blocked"]{color:var(--tucc-bad)}
+:root[data-tucc-theme="on"] .occ-policy-text[data-state="new"],:root[data-tucc-theme="on"] .occ-policy-text[data-state="own"]{color:var(--tucc-muted)}
+:root[data-tucc-theme="on"] .occ-policy-text[data-state="exception"],:root[data-tucc-theme="on"] .occ-policy-text[data-state="fallback"],:root[data-tucc-theme="on"] .occ-join-advice[data-state="fallback"]{color:#c4b5fd}
+:root[data-tucc-theme="on"] .occ-policy-banner{background:rgba(44,34,14,.95);border-color:var(--tucc-warn);color:var(--tucc-warn);font-size:12.5px}
+:root[data-tucc-theme="on"] .occ-policy-banner[data-state="join"]{background:rgba(20,40,26,.95);border-color:var(--tucc-good);color:var(--tucc-good)}
+:root[data-tucc-theme="on"] .occ-policy-banner[data-state="new"]{background:rgba(32,32,36,.95);border-color:var(--tucc-line2);color:var(--tucc-muted)}
+:root[data-tucc-theme="on"] .occ-policy-banner[data-state="early"]{background:rgba(52,22,26,.95);border-color:var(--tucc-bad);color:var(--tucc-bad)}
+:root[data-tucc-theme="on"] .occ-policy-banner[data-state="last-join"]{background:rgba(23,37,56,.95);border-color:var(--tucc-info);color:var(--tucc-info)}
+:root[data-tucc-theme="on"] .occ-join-advice.occ-join-advice-box{font-size:12px;background:rgba(44,34,14,.95);border-color:var(--tucc-warn)}
+:root[data-tucc-theme="on"] .occ-urgent{outline-color:var(--tucc-accent) !important;box-shadow:0 0 8px color-mix(in srgb,var(--tucc-accent) 55%,transparent) !important}

@@ -1,0 +1,26 @@
+/* Cash Desk: preset strips on the property vault and company funds, Deposit All, and Offer All Cash on trades.
+   Preset buttons are a dark tint of the accent (quiet, like the rest of TUCC); only Deposit All and Offer All Cash take the full fill. Labels are 12px. */
+:root[data-tucc-theme="on"] .vault-presets-dep button,:root[data-tucc-theme="on"] .vault-presets-wit button,
+:root[data-tucc-theme="on"] .company-presets-dep button,:root[data-tucc-theme="on"] .company-presets-wit button,
+:root[data-tucc-theme="on"] #vaultAssistManualBtn,:root[data-tucc-theme="on"] #tradeAllCashBtn{
+  background:var(--tucc-accent-fill) !important;color:#fff !important;border:1px solid var(--tucc-accent-fill) !important;border-radius:var(--tucc-r2) !important;
+  box-shadow:none !important;font:600 12.5px/16px var(--tucc-font) !important;padding:5px 10px !important;font-variant-numeric:tabular-nums}
+:root[data-tucc-theme="on"] .vault-presets-dep button:hover,:root[data-tucc-theme="on"] .vault-presets-wit button:hover,
+:root[data-tucc-theme="on"] .company-presets-dep button:hover,:root[data-tucc-theme="on"] .company-presets-wit button:hover,
+:root[data-tucc-theme="on"] #vaultAssistManualBtn:hover,:root[data-tucc-theme="on"] #tradeAllCashBtn:hover{background:var(--tucc-accent-fill-hover) !important}
+:root[data-tucc-theme="on"] .vault-presets-dep button:focus-visible,:root[data-tucc-theme="on"] .vault-presets-wit button:focus-visible,
+:root[data-tucc-theme="on"] .company-presets-dep button:focus-visible,:root[data-tucc-theme="on"] .company-presets-wit button:focus-visible,
+:root[data-tucc-theme="on"] #vaultAssistManualBtn:focus-visible,:root[data-tucc-theme="on"] #tradeAllCashBtn:focus-visible{outline:2px solid var(--tucc-accent) !important;outline-offset:1px}
+:root[data-tucc-theme="on"] .vault-presets-dep > span,:root[data-tucc-theme="on"] .vault-presets-wit > span,
+:root[data-tucc-theme="on"] .company-presets-dep > span,:root[data-tucc-theme="on"] .company-presets-wit > span{
+  background:var(--tucc-s3) !important;color:var(--tucc-text) !important;font:700 12px/16px var(--tucc-font) !important;padding:4px 8px !important;border-radius:var(--tucc-r2) !important}
+:root[data-tucc-theme="on"] .vault-presets-dep,:root[data-tucc-theme="on"] .vault-presets-wit,
+:root[data-tucc-theme="on"] .company-presets-dep,:root[data-tucc-theme="on"] .company-presets-wit{flex-wrap:wrap !important}
+
+/* presets: dark accent tint instead of the full fill */
+:root[data-tucc-theme="on"] .vault-presets-dep button,:root[data-tucc-theme="on"] .vault-presets-wit button,
+:root[data-tucc-theme="on"] .company-presets-dep button,:root[data-tucc-theme="on"] .company-presets-wit button{
+  background:color-mix(in srgb,var(--tucc-accent-fill) 24%,var(--tucc-s1)) !important;border:1px solid color-mix(in srgb,var(--tucc-accent-fill) 60%,transparent) !important;color:var(--tucc-text) !important}
+:root[data-tucc-theme="on"] .vault-presets-dep button:hover,:root[data-tucc-theme="on"] .vault-presets-wit button:hover,
+:root[data-tucc-theme="on"] .company-presets-dep button:hover,:root[data-tucc-theme="on"] .company-presets-wit button:hover{
+  background:color-mix(in srgb,var(--tucc-accent-fill) 42%,var(--tucc-s1)) !important;border-color:var(--tucc-accent-fill) !important}

@@ -1,0 +1,19 @@
+/* OpenMarket: TUCC look for the Min Q filter bar, and 12px quality/bonus labels.
+   The quality badge keeps its tier colours (grey < cyan < purple < gold); the theme gives it a solid dark
+   background in both of Torn's modes and maps the light-mode tier colours to the dark-mode ones so they stay readable on it. */
+:root[data-tucc-theme="on"] #openmarket-filter,:root[data-tucc-theme="on"] #openmarket-filter.om-light{background:var(--tucc-bg) !important;color:var(--tucc-text) !important;
+  border:1px solid var(--tucc-line) !important;border-radius:999px !important;padding:7px 14px !important;font:600 12.5px/1.2 var(--tucc-font) !important;box-shadow:var(--tucc-shadow) !important}
+:root[data-tucc-theme="on"] #openmarket-filter .om-f-label{color:var(--tucc-text) !important;font-variant-numeric:tabular-nums}
+:root[data-tucc-theme="on"] #openmarket-filter .om-f-small{color:var(--tucc-muted) !important;opacity:1 !important;font-size:12px !important}
+:root[data-tucc-theme="on"] #openmarket-filter .om-f-count{font-variant-numeric:tabular-nums}
+:root[data-tucc-theme="on"] #openmarket-filter .om-f-range,:root[data-tucc-theme="on"] #openmarket-filter input[type=checkbox]{accent-color:var(--tucc-accent-fill)}
+:root[data-tucc-theme="on"] #openmarket-filter .om-f-toggle{color:var(--tucc-muted) !important}
+:root[data-tucc-theme="on"] #openmarket-filter .om-f-toggle:hover{color:var(--tucc-accent) !important}
+/* value labels on Torn's item tiles */
+:root[data-tucc-theme="on"] .openmarket-quality-box{background:rgba(17,17,19,.92) !important;border:1px solid var(--tucc-line);font:700 12px/1.3 var(--tucc-font) !important;padding:1px 5px !important;border-radius:6px !important;font-variant-numeric:tabular-nums;white-space:nowrap}
+:root[data-tucc-theme="on"] .openmarket-quality-box .label-value{font:inherit !important;color:inherit !important}
+:root[data-tucc-theme="on"] .openmarket-quality-box[style*="color: rgb(113, 113, 113)"]{color:#e4e4e4 !important}
+:root[data-tucc-theme="on"] .openmarket-quality-box[style*="color: rgb(0, 149, 144)"]{color:#57efea !important}
+:root[data-tucc-theme="on"] .openmarket-quality-box[style*="color: rgb(142, 25, 193)"]{color:#c286ff !important}
+:root[data-tucc-theme="on"] .openmarket-quality-box[style*="color: rgb(227, 113, 0)"]{color:#ffd700 !important}
+:root[data-tucc-theme="on"] .openmarket-bonuses div{font-size:12px !important;font-family:var(--tucc-font);font-weight:600}

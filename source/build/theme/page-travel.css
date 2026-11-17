@@ -1,0 +1,38 @@
+/* Travel 2.Dough: its own palette variables mapped to the TUCC tokens, plus the few fixed colours and sub-12px text it has */
+:root[data-tucc-theme="on"] #ttp,:root[data-tucc-theme="on"] #ttp-fab,:root[data-tucc-theme="on"] #ttp-ta,:root[data-tucc-theme="on"] .ttp-badge{
+  --bg:var(--tucc-bg);--s1:var(--tucc-s1);--s2:var(--tucc-s2);--s3:var(--tucc-s3);--line:var(--tucc-line);--text:var(--tucc-text);--muted:var(--tucc-muted);
+  --dim:var(--tucc-dim);--accent:var(--tucc-accent);--accent-bg:var(--tucc-accent-soft);--pos:var(--tucc-good);--pos-bg:var(--tucc-good-soft);
+  --neg:var(--tucc-bad);--neg-bg:var(--tucc-bad-soft);--warn:var(--tucc-warn);--warn-bg:var(--tucc-warn-soft);--bm:#d8b4fe;--bm-bg:rgba(216,180,254,.14);
+  --font:var(--tucc-font)}
+:root[data-tucc-theme="on"] #ttp{border-radius:var(--tucc-r);box-shadow:var(--tucc-shadow);font-size:var(--tucc-fs)}
+:root[data-tucc-theme="on"] #ttp .brand small{font-size:12px !important;color:var(--tucc-dim) !important}
+/* primary fills: red with white text */
+:root[data-tucc-theme="on"] #ttp .btn{border-radius:var(--tucc-r2)}
+:root[data-tucc-theme="on"] #ttp .btn.primary{background:var(--tucc-accent-fill);border-color:var(--tucc-accent-fill);color:var(--tucc-accent-ink)}
+:root[data-tucc-theme="on"] #ttp .btn.primary:hover{background:var(--tucc-accent-fill-hover);border-color:var(--tucc-accent-fill-hover)}
+:root[data-tucc-theme="on"] #ttp .step{background:var(--tucc-accent-fill);color:var(--tucc-accent-ink)}
+:root[data-tucc-theme="on"] #ttp input[type=checkbox],:root[data-tucc-theme="on"] #ttp input[type=radio],:root[data-tucc-theme="on"] #ttp input[type=range]{accent-color:var(--tucc-accent-fill)}
+:root[data-tucc-theme="on"] #ttp .tab.on{color:var(--tucc-accent)}
+:root[data-tucc-theme="on"] #ttp .seg button.on{background:var(--tucc-accent-soft);color:var(--tucc-text)}
+:root[data-tucc-theme="on"] #ttp .trip:hover{background:var(--tucc-s2)}
+:root[data-tucc-theme="on"] #ttp tbody tr:hover td{background:var(--tucc-s2)}
+/* best-trip card: red tint instead of the blue/green gradient */
+:root[data-tucc-theme="on"] #ttp .hero{background:linear-gradient(135deg,color-mix(in srgb,var(--tucc-accent) 10%,transparent),color-mix(in srgb,var(--tucc-accent) 3%,transparent)),var(--tucc-s1);border-color:color-mix(in srgb,var(--tucc-accent) 40%,transparent)}
+:root[data-tucc-theme="on"] #ttp .leg{background:var(--tucc-bg)}
+/* minimum 12px */
+:root[data-tucc-theme="on"] #ttp .tag,:root[data-tucc-theme="on"] #ttp .eyebrow,:root[data-tucc-theme="on"] #ttp .leg-h,:root[data-tucc-theme="on"] #ttp th,
+:root[data-tucc-theme="on"] #ttp .btn.bz,:root[data-tucc-theme="on"] #ttp .feed .ic{font-size:12px}
+:root[data-tucc-theme="on"] #ttp .tag{line-height:1.3;padding:2px 7px}
+:root[data-tucc-theme="on"] #ttp .leg-h span+span{font-size:13px}
+:root[data-tucc-theme="on"] #ttp th,:root[data-tucc-theme="on"] #ttp td,:root[data-tucc-theme="on"] #ttp .money,:root[data-tucc-theme="on"] #ttp .card .v{font-variant-numeric:tabular-nums}
+:root[data-tucc-theme="on"] #ttp .btn:focus-visible,:root[data-tucc-theme="on"] #ttp .tab:focus-visible,:root[data-tucc-theme="on"] #ttp .icon:focus-visible,:root[data-tucc-theme="on"] #ttp .trip:focus-visible{outline-color:var(--tucc-accent)}
+/* floating pieces */
+:root[data-tucc-theme="on"] #ttp-fab{font-family:var(--tucc-font)}
+:root[data-tucc-theme="on"] #ttp-tip{background:var(--tucc-s3) !important;color:var(--tucc-text) !important;border-color:var(--tucc-line2) !important;font:400 12px/1.4 var(--tucc-font) !important;box-shadow:var(--tucc-shadow) !important}
+:root[data-tucc-theme="on"] #ttp-ta{border-radius:var(--tucc-r);border-left-color:var(--tucc-accent);font-size:var(--tucc-fs)}
+/* market badges sit on Torn's own page: dark pill with status text, readable on light and dark Torn */
+:root[data-tucc-theme="on"] .ttp-badge{background:var(--tucc-s1) !important;border:1px solid var(--tucc-line);font:700 12px/1.4 var(--tucc-font) !important;font-variant-numeric:tabular-nums}
+:root[data-tucc-theme="on"] .ttp-badge.pos{color:var(--tucc-good) !important}
+:root[data-tucc-theme="on"] .ttp-badge.neg{color:var(--tucc-bad) !important}
+:root[data-tucc-theme="on"] .ttp-badge.info{color:var(--tucc-info) !important}
+:root[data-tucc-theme="on"] .ttp-badge[data-tip]:hover::after{background:var(--tucc-s3);color:var(--tucc-text);border-color:var(--tucc-line2);font:400 12px/1.4 var(--tucc-font)}

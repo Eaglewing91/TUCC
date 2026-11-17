@@ -1,0 +1,4 @@
+/* Item Pins: the pin button and the pinned-row marker in the theme's red (was amber). */
+:root[data-tucc-theme="on"] .tip-pin:hover,:root[data-tucc-theme="on"] .tip-pin:focus-visible{border-color:var(--tucc-accent) !important}
+:root[data-tucc-theme="on"] .tip-pin.on{background:var(--tucc-accent-soft) !important;border-color:var(--tucc-accent) !important}
+:root[data-tucc-theme="on"] li.tip-pinned{box-shadow:inset 3px 0 0 var(--tucc-accent-fill) !important}

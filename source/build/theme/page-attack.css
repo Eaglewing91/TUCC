@@ -1,0 +1,15 @@
+/* Attack page: Hybrid's attack-type strip, grip and key hints.
+   Torn's own buttons, and Hybrid's green "start fight" weapon buttons, are untouched. */
+:root[data-tucc-theme="on"] [data-hybrid-slot-type]{display:block;margin:6px 0;padding:6px 10px;background:var(--tucc-s1);color:var(--tucc-text);border:1px solid var(--tucc-line);border-radius:var(--tucc-r2);font:13px/1.6 var(--tucc-font)}
+:root[data-tucc-theme="on"] [data-hybrid-slot-type] span,:root[data-tucc-theme="on"] [data-hybrid-slot-type] label{color:var(--tucc-text) !important;font:inherit}
+:root[data-tucc-theme="on"] [data-hybrid-slot-type] fieldset > span:first-child{color:var(--tucc-muted) !important;font-weight:600}
+:root[data-tucc-theme="on"] [data-hybrid-slot-type] fieldset > span:not(:first-child){color:var(--tucc-muted) !important}
+:root[data-tucc-theme="on"] [data-hybrid-slot-type] b{color:var(--tucc-accent)}
+:root[data-tucc-theme="on"] [data-hybrid-slot-type] input{accent-color:var(--tucc-accent-fill)}
+:root[data-tucc-theme="on"] [data-hybrid-slot-type] #hybridResetPos{color:var(--tucc-accent) !important}
+:root[data-tucc-theme="on"] .hybridGrip{background:var(--tucc-s2) !important;color:var(--tucc-accent) !important;border:1px solid var(--tucc-line2) !important;border-radius:var(--tucc-r2) !important}
+:root[data-tucc-theme="on"] .hybridGrip:hover{background:var(--tucc-s3) !important;border-color:var(--tucc-accent) !important}
+:root[data-tucc-theme="on"] .hybridWeaponBar.hybridDragging{outline-color:var(--tucc-accent) !important}
+:root[data-tucc-theme="on"] .hybridWeaponBar button.hybridWeaponBtn[data-key]:not([data-key=""])::after{font-size:12px;line-height:15px;opacity:1}
+/* Start mode: green "start the fight" weapon buttons, darkened so white text passes 4.5:1 */
+:root[data-tucc-theme="on"] .hybridWeaponBar.hybridStartMode button.hybridWeaponBtn:not([disabled]){background:linear-gradient(180deg,#2a6e2a,#1f5c1f) !important;color:#fff !important}

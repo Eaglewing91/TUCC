@@ -1,0 +1,8 @@
+/* Phones and Torn PDA: nothing wider than the screen. Always applied (positions only), theme on or off. */
+@media (max-width:480px){
+  /* Recruiting Mastered: its settings panel counted padding on top of its width */
+  #rm-panel{box-sizing:border-box!important;left:8px!important;right:8px!important;width:auto!important;max-width:none!important}
+  /* Attack Hybrid: the weapon bar is 420px wide on desktop; on a phone it sits across the bottom (drag it up or down by its grip) */
+  .hybridWeaponBar{position:fixed!important;left:6px!important;right:6px!important;width:auto!important;top:auto!important;bottom:calc(76px - var(--hybrid-dy,0px))!important}
+  .hybridWeaponBar button.hybridWeaponBtn{flex:1 1 0!important;min-width:0!important;padding-left:4px!important;padding-right:4px!important}
+}

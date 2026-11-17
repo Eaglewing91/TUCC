@@ -1,0 +1,16 @@
+/* TUCC theme for OC Command Centre's crimes-page summary card. Slot legend swatches keep Torn's slot colours. */
+:host { font-family: var(--tucc-font); font-size: 13px; color: var(--tucc-text); }
+.card { background: var(--tucc-s1); border-color: var(--tucc-line); border-left-color: var(--tucc-accent-fill); border-radius: var(--tucc-r2); }
+.title { color: var(--tucc-text); font-weight: 700; }
+.stats, .legend { color: var(--tucc-muted); }
+.stats b { color: var(--tucc-text); }
+.warn b { color: var(--tucc-bad); }
+.muted { color: var(--tucc-dim); }
+.legend, .notice { font-size: 12px; }
+.notice { color: var(--tucc-warn); }
+.sw { border-color: rgba(255,255,255,.25); }
+button { background: var(--tucc-accent-fill); border-color: var(--tucc-accent-fill); color: var(--tucc-accent-ink); border-radius: var(--tucc-r2); }
+button:hover { background: var(--tucc-accent-fill-hover); border-color: var(--tucc-accent-fill-hover); }
+button:focus-visible { outline: 2px solid var(--tucc-accent); outline-offset: 2px; }
+button.ghost { background: var(--tucc-s2); border-color: var(--tucc-line); color: var(--tucc-text); }
+button.ghost:hover { background: var(--tucc-s3); border-color: var(--tucc-accent); }
