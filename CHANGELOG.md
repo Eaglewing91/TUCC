@@ -2,6 +2,10 @@
 
 All dates are 2026. Versions before 0.14.4 were private test builds.
 
+## 0.14.5-tablet · 17 November
+
+- **Torn PDA: TUCC now loads.** PDA rewrites curly quotes in a script to straight ones before running it, which broke a quoted string and stopped 0.14.0 to 0.14.4 from loading in PDA at all. The built file now carries those characters as escapes. Nothing changes in Tampermonkey.
+
 ## 0.14.4-tablet · 17 November · first public release
 
 - **Lockpick:** Refresh now reloads the jail page. The in-place update is an optional **Fast refresh** switch in Lockpick's settings, off by default and awaiting a staff ruling.

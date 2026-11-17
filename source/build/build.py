@@ -195,5 +195,11 @@ open(os.path.join(HERE, 'CREDITS.md'), 'w', encoding='utf-8').write(CR.markdown(
 core = re.sub(r'/\*__VERSION__\*/.*?/\*__END_VERSION__\*/', lambda m: json.dumps(VERSION), core, count=1, flags=re.S)
 core = re.sub(r'/\*__THEME__\*/.*?/\*__END_THEME__\*/', lambda m: json.dumps(theme, ensure_ascii=False), core, count=1, flags=re.S)
 out = header + '\n' + core + ''.join(wrapped)
+# Torn PDA rewrites every curly quote in a script's source to a straight one before running it, which would end a
+# quoted string early and stop the whole script from loading. So the built file carries them as \u escapes instead
+# (the same characters once the script runs).
+for ch in '\u201c\u201d\u2018\u2019':
+    out = out.replace(ch, '\\u%04x' % ord(ch))
+assert not any(c in out for c in '\u201c\u201d\u2018\u2019')
 open(OUT, 'w', encoding='utf-8').write(out)
 print(OUT, len(out.splitlines()), 'lines', sorted(connects))

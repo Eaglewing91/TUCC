@@ -1,8 +1,8 @@
 # TUCC compliance record
 
-First full check: v0.10.7-tablet (2 November 2026). Last updated: **v0.14.4-tablet (17 November 2026)**.
+First full check: v0.10.7-tablet (2 November 2026). Last updated: **v0.14.5-tablet (17 November 2026)**.
 
-## Current status: v0.14.4
+## Current status: v0.14.5
 
 | Check (tested on 10 mock Torn pages, 5 simulated minutes each, every module on) | Result |
 |---|---|
@@ -16,7 +16,7 @@ First full check: v0.10.7-tablet (2 November 2026). Last updated: **v0.14.4-tabl
 
 ### Torn PDA (new in v0.14.0)
 
-Tested in a mock of Torn PDA's script environment (PDA's own GMforPDA layer and request functions, taken from PDA's repository), on phone screens. Not yet tested in the app itself.
+Tested in a mock of Torn PDA's script environment (PDA's own GMforPDA layer and request functions, taken from PDA's repository), on phone screens. Since 0.14.5 the mock also applies what PDA does to a script's source before running it (swapping the key placeholder, turning curly quotes into straight ones, wrapping the script in a function that runs once per page). Versions 0.14.0 to 0.14.4 did not load in PDA at all: PDA's quote change broke a quoted string. 0.14.5 writes those characters as escapes, so there is nothing for PDA to change.
 
 | Check | Result |
 |---|---|

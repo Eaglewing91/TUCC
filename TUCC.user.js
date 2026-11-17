@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Torn Ultimate Command Centre [TUCC]
 // @namespace    eaglewing.torn.tucc
-// @version      0.14.4-tablet
+// @version      0.14.5-tablet
 // @description  One install for Eaglewing's Torn tools: Travel 2.Dough, Torn Pulse, Attack Hybrid Ultimate, RW Energy Guard, OC Command Centre, Recruiting Mastered, OpenMarket (Enhanced), Torn Spectrum, Medal Detector, Lockpick, Cash Desk, Item Pins, Ranked Notes, plus War Room, Crimes Analyst, Company Manager, Market Watcher, Big Al's Watch and Defib. One API engine (shared budget, shared responses, pause on API errors, key in a header), one alerts centre and one TUCC page, opened from its own row in Torn's Areas list. Each module can be switched off.
 // @author       Eaglewing [571041]
 // @match        https://www.torn.com/*
@@ -108,7 +108,7 @@
 const TUCC = (() => {
   'use strict';
   const T_START = performance.now();                          // ms from the page starting to load until Tampermonkey ran TUCC
-  const VERSION = (typeof GM_info !== 'undefined' && GM_info.script && GM_info.script.version) || "0.14.4-tablet";
+  const VERSION = (typeof GM_info !== 'undefined' && GM_info.script && GM_info.script.version) || "0.14.5-tablet";
   const CORE = 'tucc_core:';
   const modules = [];
   const state = {}; // id -> { status, error, menus: [] }
@@ -1740,7 +1740,7 @@ TUCC.register({"id": "spectrum", "where": "every page", "launch": {"menu": "Open
   /*  Colour layers                                                      */
   /* ------------------------------------------------------------------ */
   const PRESETS = {
-    none:     { name: 'None',            filter: '',                                                desc: 'Torn exactly as normal (works alongside Torn’s own dark mode).' },
+    none:     { name: 'None',            filter: '',                                                desc: 'Torn exactly as normal (works alongside Torn\u2019s own dark mode).' },
     calm:     { name: 'Calm',            filter: 'saturate(0.6) contrast(0.9)',                     desc: 'Muted colours and softer contrast — less visual noise without losing detail.' },
     lowstim:  { name: 'Low stimulation', filter: 'saturate(0.3) contrast(0.82) brightness(0.96)',   desc: 'Strongly muted, gentle contrast. Good for sensory sensitivity and overwhelm.' },
     sepia:    { name: 'Paper',           filter: 'sepia(0.45) saturate(0.85) contrast(0.92)',       desc: 'Warm, paper-like tone that many find easier for long reading sessions.' },
@@ -2049,7 +2049,7 @@ TUCC.register({"id": "spectrum", "where": "every page", "launch": {"menu": "Open
         </section>
         <section>
           <h3>Coloured overlay</h3>
-          <p class="tcl-hint">Tinted overlays, like reading overlays, can ease visual stress. Everyone’s best colour is different, so try a few. Dark simply dims the whole screen.</p>
+          <p class="tcl-hint">Tinted overlays, like reading overlays, can ease visual stress. Everyone\u2019s best colour is different, so try a few. Dark simply dims the whole screen.</p>
           <div class="tcl-chips" role="radiogroup" aria-label="Overlay colour">${chips}</div>
           ${range('tintStrength', 'Strength', 5, 60, 1, '%')}
           <label class="tcl-row"><span>Overlay style</span>
@@ -2077,7 +2077,7 @@ TUCC.register({"id": "spectrum", "where": "every page", "launch": {"menu": "Open
           </div>
           ${tog('readableFont', 'Readable font', 'Uses Atkinson Hyperlegible / Lexend / OpenDyslexic if installed, else Verdana')}
           ${tog('textSpacing', 'Extra text spacing', 'Wider letter and word spacing')}
-          ${tog('underlineLinks', 'Underline links', 'So links don’t rely on colour alone')}
+          ${tog('underlineLinks', 'Underline links', 'So links don\u2019t rely on colour alone')}
           ${tog('strongFocus', 'Strong focus outline', 'Bright outline for keyboard navigation')}
           ${tog('pauseGifs', 'Pause animated images', 'Freezes animated profile pictures, signatures and honor bars. Tap one to play it.')}
           <div class="tcl-sub" data-gif-opts>
@@ -2091,7 +2091,7 @@ TUCC.register({"id": "spectrum", "where": "every page", "launch": {"menu": "Open
         </section>
         <section data-fab-opts hidden>
           <h3>Floating button</h3>
-          <p class="tcl-hint">Shown in Torn PDA and on phones where the avatar-menu entry isn’t available.</p>
+          <p class="tcl-hint">Shown in Torn PDA and on phones where the avatar-menu entry isn\u2019t available.</p>
           <label class="tcl-row"><span>Side</span>
             <select data-key="floaterSide">
               <option value="left">Left</option>
@@ -10643,7 +10643,7 @@ TUCC.register({"id": "pulse", "where": "every page", "launch": {"host": "torn-pu
             }
         }
         // Levelling, crimes
-        if ((u.level || 99) < 15) add('xp', 88, '🎯', 'Attack and choose “Leave”', 'Leaving after a win gives the most experience while you are levelling.');
+        if ((u.level || 99) < 15) add('xp', 88, '🎯', 'Attack and choose \u201cLeave\u201d', 'Leaving after a win gives the most experience while you are levelling.');
         if (u.nerve && pct(u.nerve) >= 0.7) {
             add('nerve', u.nerve.cur >= u.nerve.max ? 90 : 85, '🔴', 'Use your nerve on crimes',
                 `Nerve is ${u.nerve.cur} of ${u.nerve.max}.`, ['Crimes', LINKS.crimes]);
@@ -11918,7 +11918,7 @@ TUCC.register({"id": "rwguard", "where": "the gym", "home": "/gym.php", "inline"
   /* ----------------- MENU ----------------- */
   GM_registerMenuCommand('RW Energy Guard: Set API key', setApiKey);
   GM_registerMenuCommand('RW Energy Guard: Clear API key', clearApiKey);
-  GM_registerMenuCommand('RW Energy Guard: Reset “Don’t ask again”', resetSuppress);
+  GM_registerMenuCommand('RW Energy Guard: Reset \u201cDon\u2019t ask again\u201d', resetSuppress);
 
   function setApiKey() {
     const k = prompt('RW Energy Guard: Enter your Torn API key (a Public key is enough). It is stored locally in Tampermonkey.', apiKey);
@@ -12097,7 +12097,7 @@ TUCC.register({"id": "rwguard", "where": "the gym", "home": "/gym.php", "inline"
     footer.className = 'footer';
     const label = document.createElement('label');
     const suppress = Object.assign(document.createElement('input'), { type: 'checkbox', id: 'rwEG_suppress' });
-    label.append(suppress, ' Don’t ask again for 30 minutes');
+    label.append(suppress, ' Don\u2019t ask again for 30 minutes');
     footer.append(label);
     const actions = document.createElement('div');
     actions.className = 'actions';
@@ -18788,7 +18788,7 @@ TUCC.register({"id": "pricecheck", "where": "ranked war items: auction house, It
     function normalizeItemNameKey(name) {
         return (name || '')
             .replace(/^The\s+/i, '')
-            .replace(/[’`]/g, "'")
+            .replace(/[\u2019`]/g, "'")
             .replace(/\s+/g, ' ')
             .trim()
             .toLowerCase();

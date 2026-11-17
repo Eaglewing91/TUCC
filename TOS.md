@@ -25,4 +25,4 @@ These are read-only. No API key and nothing about you is sent to any of them.
 
 Each service has its own terms on its site; using a module that reads from it means using that service.
 
-TUCC version 0.14.4-tablet · Eaglewing [571041]. Reviewed 17 November 2026. The same table is shown in TUCC's API Keys app, under the key boxes.
+TUCC version 0.14.5-tablet · Eaglewing [571041]. Reviewed 17 November 2026. The same table is shown in TUCC's API Keys app, under the key boxes.

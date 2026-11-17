@@ -2,7 +2,7 @@
 
 One userscript for Torn that bundles Eaglewing's Torn tools (20 modules, including WinterValor's TORN Auction Price Checker, with his permission) behind one key screen, one dark theme (in five accent colours: Red, Blue, Purple, Teal and Graphite) and one shared Torn API engine.
 
-Version **0.14.4-tablet** · by **Eaglewing [571041]** · licence **GPL-3.0-or-later** · for Tampermonkey and Torn PDA (PDA support is new in 0.14.0: tested in a mock of PDA's script environment, not yet in the app itself).
+Version **0.14.5-tablet** · by **Eaglewing [571041]** · licence **GPL-3.0-or-later** · for Tampermonkey and Torn PDA (PDA support is new; 0.14.5 fixes a fault that stopped TUCC loading in PDA at all).
 
 **[Install TUCC](https://raw.githubusercontent.com/Eaglewing91/TUCC/main/TUCC.user.js)** · [Changelog](CHANGELOG.md) · [Terms of Service](TOS.md) · [Compliance record](COMPLIANCE.md) · [Credits](CREDITS.md)
 
