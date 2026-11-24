@@ -104,7 +104,7 @@
         1: ['First Aid and Abet', 'Mob Mentality', 'Pet Project'],
         2: ['Thou Shalt Not Steal', 'Cash Me If You Can', 'Best of the Lot'],
         3: ['Smoke and Wing Mirrors', 'Market Forces', 'Gaslight the Way'],
-        4: ['Snow Blind', 'Plucking the Lotus Petal', 'Stage Fright'],
+        4: ['Snow Blind', 'Plucking the Lotus Petal', 'Stage Fright', 'Earn Your Stripes'],   // Earn Your Stripes: added by Torn, 24 Nov 2026
         5: ['Guardian Ángels', 'Honey Trap', 'Counter Offer', 'No Reserve'],
         6: ['Bidding War', 'Leave No Trace', 'Dish It Out', 'Sneaky Git Grab'],
         7: ['Blast from the Past', 'Window of Opportunity', 'Cleared for Takeoff'],

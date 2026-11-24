@@ -2,6 +2,10 @@
 
 All dates are 2026. Versions before 0.14.4 were private test builds.
 
+## 0.14.6-tablet · 24 November
+
+- **OC Command Centre:** added Torn's new level 4 scenario, **Earn Your Stripes**. It now appears in CPR settings under level 4. Its roles are read from your faction's open crimes, the same as other scenarios without a built-in role list.
+
 ## 0.14.5-tablet · 17 November
 
 - **Torn PDA: TUCC now loads.** PDA rewrites curly quotes in a script to straight ones before running it, which broke a quoted string and stopped 0.14.0 to 0.14.4 from loading in PDA at all. The built file now carries those characters as escapes. Nothing changes in Tampermonkey.

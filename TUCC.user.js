@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Torn Ultimate Command Centre [TUCC]
 // @namespace    eaglewing.torn.tucc
-// @version      0.14.5-tablet
+// @version      0.14.6-tablet
 // @description  One install for Eaglewing's Torn tools: Travel 2.Dough, Torn Pulse, Attack Hybrid Ultimate, RW Energy Guard, OC Command Centre, Recruiting Mastered, OpenMarket (Enhanced), Torn Spectrum, Medal Detector, Lockpick, Cash Desk, Item Pins, Ranked Notes, plus War Room, Crimes Analyst, Company Manager, Market Watcher, Big Al's Watch and Defib. One API engine (shared budget, shared responses, pause on API errors, key in a header), one alerts centre and one TUCC page, opened from its own row in Torn's Areas list. Each module can be switched off.
 // @author       Eaglewing [571041]
 // @match        https://www.torn.com/*
@@ -108,7 +108,7 @@
 const TUCC = (() => {
   'use strict';
   const T_START = performance.now();                          // ms from the page starting to load until Tampermonkey ran TUCC
-  const VERSION = (typeof GM_info !== 'undefined' && GM_info.script && GM_info.script.version) || "0.14.5-tablet";
+  const VERSION = (typeof GM_info !== 'undefined' && GM_info.script && GM_info.script.version) || "0.14.6-tablet";
   const CORE = 'tucc_core:';
   const modules = [];
   const state = {}; // id -> { status, error, menus: [] }
@@ -5907,7 +5907,7 @@ TUCC.register({"id": "oc", "where": "every page", "launch": {"host": "eaglewing-
         1: ['First Aid and Abet', 'Mob Mentality', 'Pet Project'],
         2: ['Thou Shalt Not Steal', 'Cash Me If You Can', 'Best of the Lot'],
         3: ['Smoke and Wing Mirrors', 'Market Forces', 'Gaslight the Way'],
-        4: ['Snow Blind', 'Plucking the Lotus Petal', 'Stage Fright'],
+        4: ['Snow Blind', 'Plucking the Lotus Petal', 'Stage Fright', 'Earn Your Stripes'],   // Earn Your Stripes: added by Torn, 24 Nov 2026
         5: ['Guardian Ángels', 'Honey Trap', 'Counter Offer', 'No Reserve'],
         6: ['Bidding War', 'Leave No Trace', 'Dish It Out', 'Sneaky Git Grab'],
         7: ['Blast from the Past', 'Window of Opportunity', 'Cleared for Takeoff'],

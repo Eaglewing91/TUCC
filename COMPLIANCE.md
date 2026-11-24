@@ -1,8 +1,8 @@
 # TUCC compliance record
 
-First full check: v0.10.7-tablet (2 November 2026). Last updated: **v0.14.5-tablet (17 November 2026)**.
+First full check: v0.10.7-tablet (2 November 2026). Last updated: **v0.14.6-tablet (24 November 2026)**.
 
-## Current status: v0.14.5
+## Current status: v0.14.6
 
 | Check (tested on 10 mock Torn pages, 5 simulated minutes each, every module on) | Result |
 |---|---|
