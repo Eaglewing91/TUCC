@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Torn Ultimate Command Centre [TUCC]
 // @namespace    eaglewing.torn.tucc
-// @version      0.16.1-tablet
+// @version      0.16.2-tablet
 // @description  One install for Eaglewing's Torn tools: Travel 2.Dough, Torn Pulse, Attack Hybrid Ultimate, Combat Desk, RW Energy Guard, OC Command Centre, Recruiting Mastered, OpenMarket (Enhanced), Torn Spectrum, Medal Detector, Lockpick, Cash Desk, Item Pins, Ranked Notes, plus War Room, Crimes Analyst, Company Manager, Market Watcher, Big Al's Watch and Defib. One API engine (shared budget, shared responses, pause on API errors, key in a header), one alerts centre and one TUCC page, opened from its own row in Torn's Areas list. Each module can be switched off.
 // @author       Eaglewing [571041]
 // @match        https://www.torn.com/*
@@ -108,7 +108,7 @@
 const TUCC = (() => {
   'use strict';
   const T_START = performance.now();                          // ms from the page starting to load until Tampermonkey ran TUCC
-  const VERSION = (typeof GM_info !== 'undefined' && GM_info.script && GM_info.script.version) || "0.16.1-tablet";
+  const VERSION = (typeof GM_info !== 'undefined' && GM_info.script && GM_info.script.version) || "0.16.2-tablet";
   const CORE = 'tucc_core:';
   const modules = [];
   const state = {}; // id -> { status, error, menus: [] }
@@ -1427,7 +1427,7 @@ const TUCC = (() => {
       <div style="margin:8px 0 14px"><button type="button" class="b" id="tucc-key-recheck">Check keys again</button> <span class="note">Each key is checked with one call to Torn's API (key info) when you save it and every 6 hours.</span></div>
       ${tosHTML()}`;
   }
-  const CREDITS = {"core": {"m": "TUCC core (API engine, alerts, TUCC page, theme)", "a": "Eaglewing [571041]", "l": "GNU GPLv3 or later for TUCC as a whole, because it includes OpenMarket (GPLv3); the parts by Eaglewing may also be used on their own under MIT", "x": [], "u": "", "t": false}, "list": [{"m": "Torn Spectrum", "a": "Eaglewing [571041]", "l": "MIT", "x": [], "u": "", "t": false}, {"m": "Travel 2.Dough", "a": "Eaglewing [571041]", "l": "MIT", "x": ["Foreign stock and shop prices: YATA by Kivou [2000607] (yata.yt), Prometheus (prombot.co.uk) and TornIntel (torn-intel.com), and every player who reports stock to them", "Bazaar prices: TornW3B by Weav3r [1853324] (weav3r.dev)", "Flight times, ticket prices, carry capacity and travel perks: the Torn wiki, written by Torn's players", "Hunting: the Torn wiki (Hunting), and player reports collected in TC Basic's hunting guide (tcbasic.com) for the pay estimate"], "u": "", "t": false}, {"m": "Attack Hybrid Ultimate", "a": "Eaglewing [571041]", "l": "Not stated", "x": ["Original attack refresher and move-attack-buttons scripts by olesien [2187764]; original concept and code credit remains with olesien"], "u": "", "t": false}, {"m": "Recruiting Mastered (Experimental)", "a": "Eaglewing [571041]", "l": "MIT", "x": [], "u": "", "t": false}, {"m": "OC Command Centre", "a": "Eaglewing [571041]", "l": "MIT", "x": ["Builds on earlier OC work by Flamer, Allenone, Verboten, Darrelia, Kohnago, pawl, Qfiffle, JohnNash, callmericky [3299880] and whatdoesthespacebardo (MIT-licensed work used under its licence, copyright with its authors)", "Grew out of OC Item Audit by Eaglewing [571041]", "Role weights and estimated success: Allenone's Torn Probability (tornprobability.com)"], "u": "", "t": false}, {"m": "Torn Pulse", "a": "Eaglewing [571041]", "l": "Not stated", "x": ["Advice, checklist, progress and stock features inspired by \"Torn Growth Advisor\" by curtthecoder (MIT); an independent rewrite", "Gym gain estimates: the community Vladar training formula v2.0", "Stat ratios: Baldr's and Hank's ratios, from Baldr's forum guide \"Hank's Ratio / Baldr's Ratio\"", "Ideas only, no code copied: GymIQ by CLASIX (train-next order, balance grade, war weighting); TornTools' Specialist Gyms by DeKleineKobini [2114440] and the TornTools team (safe-to-train margins); StatForge by AeC3 (best gym per stat, as advice only)"], "u": "", "t": false}, {"m": "RW Energy Guard", "a": "Eaglewing [571041]", "l": "MIT", "x": [], "u": "", "t": false}, {"m": "OpenMarket (Enhanced)", "a": "Original OpenMarket 1.0.1.1 by Snickelfritz; enhancements by Eaglewing", "l": "GNU GPLv3", "x": [], "u": "https://greasyfork.org/en/scripts/571158-openmarket", "t": false}, {"m": "Medal Detector", "a": "Eaglewing [571041]", "l": "MIT", "x": [], "u": "", "t": false}, {"m": "Lockpick: Jail Bust HUD", "a": "Eaglewing [571041]", "l": "MIT", "x": ["Heat (bust penalty) curve constants adapted from BUSTR by Adobi, Ironhydedragon and The_Baron (MIT); the odds model and interface are original to Lockpick"], "u": "", "t": false}, {"m": "Cash Desk", "a": "Eaglewing [571041]", "l": "MIT", "x": ["Formerly \"Torn - Vault Presets + Quick Cash\" 3.1.0, a merge of Vault Preset Buttons 1.1.1 and Quick Cash Actions 2.10"], "u": "", "t": false}, {"m": "Item Pins", "a": "Eaglewing [571041]", "l": "MIT", "x": [], "u": "", "t": false}, {"m": "TORN Auction Price Checker", "a": "WinterValor [3945658]", "l": "MIT", "x": ["Version 5.3.0 by WinterValor [3945658], included unchanged in TUCC with his permission", "Data: his auction search service and TornW3B by Weav3r [1853324]"], "u": "https://greasyfork.org/scripts/564049", "t": false}, {"m": "Ranked Notes", "a": "Eaglewing [571041]", "l": "MIT", "x": ["Page-structure approach credited to TORN Auction Price Checker by WinterValor [3945658] (no code copied)"], "u": "", "t": false}, {"m": "Big Al's Watch", "a": "Original script by swervelord; TUCC version by Eaglewing", "l": "Original: none stated", "x": ["Original: \"Torn Big Al's Special Ammo Alert\" by swervelord", "TUCC version rewritten to run on TUCC's API engine, alerts and layout (the original states no licence, so its code isn't copied)"], "u": "https://greasyfork.org/en/scripts/565775-torn-big-al-s-special-ammo-alert", "t": false}, {"m": "War Room", "a": "Eaglewing [571041]", "l": "MIT", "x": [], "u": "", "t": true}, {"m": "Crimes Analyst", "a": "Eaglewing [571041]", "l": "MIT", "x": [], "u": "", "t": true}, {"m": "Company Manager", "a": "Eaglewing [571041]", "l": "MIT", "x": [], "u": "", "t": true}, {"m": "Market Watcher", "a": "Eaglewing [571041]", "l": "MIT", "x": [], "u": "", "t": true}, {"m": "Defib: Hospital Revive HUD", "a": "Eaglewing [571041]", "l": "MIT", "x": ["Revive chance numbers from the Torn Wiki (Revive) and the 2021 medical changes (Torn City Newspaper); refined by fitting to the chances Torn records in your faction's revive log", "Ideas from a review of public revive scripts: Torn Revive Radar by Oxain, TornReviveChance by Resh, Torn City Reviver's Tool by Lily, FastRevive by Upsilon and Revive Intel Pro by TheBeastMan (no code copied)"], "u": "", "t": true}], "also": ["All game data: the official Torn API (torn.com/api.html). Torn, its name and its game data belong to Torn (Chedburn). TUCC is fan-made and not affiliated with Torn.", "Torn PDA support uses the script functions Torn PDA provides: Torn PDA by Manuito [2225097], and its GMforPDA layer by Kwack [2190604]. Nothing of theirs is bundled."]};
+  const CREDITS = {"core": {"m": "TUCC core (API engine, alerts, TUCC page, theme)", "a": "Eaglewing [571041]", "l": "GNU GPLv3 or later for TUCC as a whole, because it includes OpenMarket (GPLv3); the parts by Eaglewing may also be used on their own under MIT", "x": [], "u": "", "t": false}, "list": [{"m": "Torn Spectrum", "a": "Eaglewing [571041]", "l": "MIT", "x": [], "u": "", "t": false}, {"m": "Travel 2.Dough", "a": "Eaglewing [571041]", "l": "MIT", "x": ["Foreign stock and shop prices: YATA by Kivou [2000607] (yata.yt), Prometheus (prombot.co.uk) and TornIntel (torn-intel.com), and every player who reports stock to them", "Bazaar prices: TornW3B by Weav3r [1853324] (weav3r.dev)", "Flight times, ticket prices, carry capacity and travel perks: the Torn wiki, written by Torn's players", "Hunting: the Torn wiki (Hunting), and player reports collected in TC Basic's hunting guide (tcbasic.com) for the pay estimate"], "u": "", "t": false}, {"m": "Attack Hybrid Ultimate", "a": "Eaglewing [571041]", "l": "Not stated", "x": ["Original attack refresher and move-attack-buttons scripts by olesien [2187764]; original concept and code credit remains with olesien"], "u": "", "t": false}, {"m": "Recruiting Mastered (Experimental)", "a": "Eaglewing [571041]", "l": "MIT", "x": [], "u": "", "t": false}, {"m": "OC Command Centre", "a": "Eaglewing [571041]", "l": "MIT", "x": ["Builds on earlier OC work by Flamer, Allenone, Verboten, Darrelia, Kohnago, pawl, Qfiffle, JohnNash, callmericky [3299880] and whatdoesthespacebardo (MIT-licensed work used under its licence, copyright with its authors)", "Grew out of OC Item Audit by Eaglewing [571041]", "Role weights and estimated success: Allenone's Torn Probability (tornprobability.com)"], "u": "", "t": false}, {"m": "Torn Pulse", "a": "Eaglewing [571041]", "l": "Not stated", "x": ["Advice, checklist, progress and stock features inspired by \"Torn Growth Advisor\" by curtthecoder (MIT); an independent rewrite", "Gym gain estimates: the community Vladar training formula v2.0", "Stat ratios: Baldr's and Hank's ratios, from Baldr's forum guide \"Hank's Ratio / Baldr's Ratio\"", "Ideas only, no code copied: GymIQ by CLASIX (train-next order, balance grade, war weighting); TornTools' Specialist Gyms by DeKleineKobini [2114440] and the TornTools team (safe-to-train margins); StatForge by AeC3 (best gym per stat, as advice only)"], "u": "", "t": false}, {"m": "RW Energy Guard", "a": "Eaglewing [571041]", "l": "MIT", "x": [], "u": "", "t": false}, {"m": "OpenMarket (Enhanced)", "a": "Original OpenMarket 1.0.1.1 by Snickelfritz; enhancements by Eaglewing", "l": "GNU GPLv3", "x": [], "u": "https://greasyfork.org/en/scripts/571158-openmarket", "t": false}, {"m": "Medal Detector", "a": "Eaglewing [571041]", "l": "MIT", "x": [], "u": "", "t": false}, {"m": "Lockpick: Jail Bust HUD", "a": "Eaglewing [571041]", "l": "MIT", "x": ["Heat (bust penalty) curve constants adapted from BUSTR by Adobi, Ironhydedragon and The_Baron (MIT); the odds model and interface are original to Lockpick"], "u": "", "t": false}, {"m": "Cash Desk", "a": "Eaglewing [571041]", "l": "MIT", "x": ["Formerly \"Torn - Vault Presets + Quick Cash\" 3.1.0, a merge of Vault Preset Buttons 1.1.1 and Quick Cash Actions 2.10"], "u": "", "t": false}, {"m": "Item Pins", "a": "Eaglewing [571041]", "l": "MIT", "x": [], "u": "", "t": false}, {"m": "TORN Auction Price Checker", "a": "WinterValor [3945658]", "l": "MIT", "x": ["Version 5.3.0 by WinterValor [3945658], included unchanged in TUCC with his permission", "Data: his auction search service and TornW3B by Weav3r [1853324]"], "u": "https://greasyfork.org/scripts/564049", "t": false}, {"m": "Ranked Notes", "a": "Eaglewing [571041]", "l": "MIT", "x": ["Page-structure approach credited to TORN Auction Price Checker by WinterValor [3945658] (no code copied)"], "u": "", "t": false}, {"m": "Big Al's Watch", "a": "Original script by swervelord; TUCC version by Eaglewing", "l": "Original: none stated", "x": ["Original: \"Torn Big Al's Special Ammo Alert\" by swervelord", "TUCC version rewritten to run on TUCC's API engine, alerts and layout (the original states no licence, so its code isn't copied)"], "u": "https://greasyfork.org/en/scripts/565775-torn-big-al-s-special-ammo-alert", "t": false}, {"m": "War Room", "a": "Eaglewing [571041]", "l": "MIT", "x": ["Optional \"BSP stats\" column: shows the battle stats predictions and spies that Battle Stats Predictor (BSP) by TDup has saved in your own browser. BSP and its prediction service are TDup's work. TUCC includes none of BSP's code, makes no requests to BSP's server, and shows nothing unless you run BSP yourself"], "u": "https://www.torn.com/forums.php#/p=threads&f=67&t=16290324", "t": true}, {"m": "Combat Desk", "a": "Eaglewing [571041]", "l": "GNU GPLv3", "x": ["Weapon bonus, armour set and special ammo rules from the Torn Wiki (Weapon Bonus, Armor, Ammo)"], "u": "", "t": true}, {"m": "Crimes Analyst", "a": "Eaglewing [571041]", "l": "MIT", "x": [], "u": "", "t": true}, {"m": "Company Manager", "a": "Eaglewing [571041]", "l": "MIT", "x": [], "u": "", "t": true}, {"m": "Market Watcher", "a": "Eaglewing [571041]", "l": "MIT", "x": [], "u": "", "t": true}, {"m": "Defib: Hospital Revive HUD", "a": "Eaglewing [571041]", "l": "MIT", "x": ["Revive chance numbers from the Torn Wiki (Revive) and the 2021 medical changes (Torn City Newspaper); refined by fitting to the chances Torn records in your faction's revive log", "Ideas from a review of public revive scripts: Torn Revive Radar by Oxain, TornReviveChance by Resh, Torn City Reviver's Tool by Lily, FastRevive by Upsilon and Revive Intel Pro by TheBeastMan (no code copied)"], "u": "", "t": true}], "also": ["All game data: the official Torn API (torn.com/api.html). Torn, its name and its game data belong to Torn (Chedburn). TUCC is fan-made and not affiliated with Torn.", "Torn PDA support uses the script functions Torn PDA provides: Torn PDA by Manuito [2225097], and its GMforPDA layer by Kwack [2190604]. Nothing of theirs is bundled."]};
   function creditsHTML() {
     const prof = (t) => esc(t).replace(/\[(\d{3,8})\]/g, (_, id) => `[<a href="https://www.torn.com/profiles.php?XID=${id}" target="_blank" rel="noopener">${id}</a>]`);
     const row = (c) => `<tr><th>${esc(c.m)}</th><td><b>${prof(c.a)}</b> <span class="pill p-lvl">${esc(c.l)}</span>${c.x.length ? `<ul class="cr">${c.x.map((x) => `<li>${prof(x)}</li>`).join('')}</ul>` : ''}${c.u ? `<div class="note" style="margin:3px 0 0"><a href="${esc(c.u)}" target="_blank" rel="noopener">Original project page</a></div>` : ''}</td></tr>`;
@@ -13207,18 +13207,20 @@ TUCC.register({"id": "openmarket", "where": "the Item Market, auctions and bazaa
 
 });
 
-/* ===================== MODULE: Medal Detector v2.1.1 (original script; TUCC changes listed in the build notes) ===================== */
-TUCC.register({"id": "medals", "where": "every page", "launch": {"host": "medal-detector-root", "hide": ".fab", "menu": "Open Medal Detector", "icon": "★", "hint": "Honours, medals and goals"}, "name": "Medal Detector", "short": "Medals", "runAt": "idle", "desc": "Every honour and medal, your next award for each stat, and daily goals towards them (Torn API only).", "keyStore": "mh_key", "keyLevel": "Limited", "version": "2.1.1", "matches": ["https://www.torn.com/*"]}, function (GM_getValue, GM_setValue, GM_deleteValue, GM_listValues, GM_xmlhttpRequest, GM_addStyle, GM_registerMenuCommand, GM_notification, GM, GM_info, unsafeWindow, window, XMLHttpRequest, fetch, tucc, alert, confirm, prompt) {
+/* ===================== MODULE: Medal Detector v2.2.0 (original script; TUCC changes listed in the build notes) ===================== */
+TUCC.register({"id": "medals", "where": "every page", "launch": {"host": "medal-detector-root", "hide": ".fab", "menu": "Open Medal Detector", "icon": "★", "hint": "Honours, medals and goals"}, "name": "Medal Detector", "short": "Medals", "runAt": "idle", "desc": "Every honour and medal, your next award for each stat, and daily goals towards them (Torn API only).", "keyStore": "mh_key", "keyLevel": "Limited", "version": "2.2.0", "matches": ["https://www.torn.com/*"]}, function (GM_getValue, GM_setValue, GM_deleteValue, GM_listValues, GM_xmlhttpRequest, GM_addStyle, GM_registerMenuCommand, GM_notification, GM, GM_info, unsafeWindow, window, XMLHttpRequest, fetch, tucc, alert, confirm, prompt) {
 
 /*
- * Medal Detector v2.1.1
+ * Medal Detector v2.2.0
  * Copyright (c) 2026 Eaglewing [571041]. Released under the MIT licence (see LICENSE).
  */
 
 /*
  * COMPLIANCE NOTES (Torn scripting rules)
  * - Every network request goes to api.torn.com: one user call per refresh (personalstats, profile,
- *   honors, medals, battlestats, workstats, education, perks) and torn -> honors, medals once a day.
+ *   honors, medals, battlestats, workstats, education, perks), torn -> honors, medals once a day, and
+ *   Torn's own progress for every award (API v2 user/medals and user/honors, one call per category,
+ *   25 calls spaced out, at most every 6 hours or when you press "Check again"; key sent in the header).
  *   Timed API calls are allowed. One Limited key covers everything.
  * - It also re-checks the API a few seconds after you click something in Torn or return to the tab.
  *   It only listens for your clicks; it never clicks, submits or requests Torn pages itself.
@@ -13754,6 +13756,71 @@ TUCC.register({"id": "medals", "where": "every page", "launch": {"host": "medal-
     return fresh;
   }
 
+  /* Torn's own progress for every honour and medal (API v2 'cat' filter): each category returns all its awards,
+     earned or not, with a current and target value where Torn tracks one. One call per category. */
+  const PROG_CATS = {
+    medals: ['general', 'attacking', 'crimes', 'commitment', 'rank', 'level', 'networth'],
+    honors: ['attacking', 'camo', 'weapons', 'education', 'crimes', 'drugs', 'jail', 'hospital', 'travel', 'gym', 'level', 'competitions', 'money', 'items', 'commitment', 'casino', 'missions', 'misc'],
+  };
+  const PROG_EVERY_MS = 6 * 3600000;
+  function apiV2(path) {
+    const key = getKey();
+    if (!key) return Promise.reject(new Error('No API key set'));
+    return new Promise((resolve, reject) => {
+      GM_xmlhttpRequest({
+        method: 'GET',
+        url: `${API_ROOT}v2/${path}${path.includes('?') ? '&' : '?'}comment=MedalDetector`,
+        headers: { Authorization: 'ApiKey ' + key, Accept: 'application/json' },
+        timeout: 15000,
+        onload: (r) => {
+          try {
+            const d = JSON.parse(r.responseText);
+            if (d && d.error) { const e = new Error(d.error.code === 16 ? "Your key's access level is too low for award progress." : `API error ${d.error.code}: ${d.error.error}`); e.code = d.error.code; reject(e); }
+            else resolve(d);
+          } catch (e) { reject(new Error('Bad API response')); }
+        },
+        onerror: () => reject(new Error('Network error')),
+        ontimeout: () => reject(new Error('API timed out')),
+      });
+    });
+  }
+  // One award's progress, kept small: [earned 0/1, current or null, target or null].
+  function progEntry(a) {
+    const p = a && a.progress && typeof a.progress === 'object' ? a.progress : null;
+    const n = (v) => (typeof v === 'number' && isFinite(v) ? v : null);
+    return [a.is_unlocked ? 1 : 0, p ? n(p.current) : null, p ? n(p.target) : null];
+  }
+  let progBusy = false;
+  async function ensureProgress(force) {
+    const cur = store.get('mh_progress', null);
+    if (progBusy || !getKey()) return cur;
+    if (!force && cur && Date.now() - (cur.tried || 0) < PROG_EVERY_MS) return cur;
+    progBusy = true;
+    // claim the slot first so other tabs don't run the same set of calls
+    const out = { fetched: cur ? cur.fetched || 0 : 0, tried: Date.now(), error: '', honors: Object.assign({}, cur && cur.honors), medals: Object.assign({}, cur && cur.medals) };
+    store.set('mh_progress', out);
+    let ok = 0;
+    try {
+      outer: for (const kind of ['medals', 'honors']) {
+        for (const cat of PROG_CATS[kind]) {
+          try {
+            const d = await apiV2(`user/${kind}?cat=${cat}`);
+            for (const a of (d && d[kind]) || []) { const id = Number(a && a.id); if (!isNaN(id)) out[kind][id] = progEntry(a); }
+            ok++;
+          } catch (e) {
+            out.error = e.message;
+            if ([1, 2, 5, 8, 10, 13, 16, 18].includes(e.code)) break outer;   // key problem or rate limit: stop, try again next time
+          }
+          await new Promise((r) => setTimeout(r, 650));
+        }
+      }
+      if (ok) out.fetched = Date.now();
+      if (ok === PROG_CATS.medals.length + PROG_CATS.honors.length) out.error = '';
+      store.set('mh_progress', out);
+    } finally { progBusy = false; }
+    return out;
+  }
+
   // Historical stats at a timestamp, in chunks of 10 stat names (personal stats only).
   async function fetchAt(ts, keys) {
     keys = keys.filter((k) => !isVirtual(k));
@@ -13805,6 +13872,8 @@ TUCC.register({"id": "medals", "where": "every page", "launch": {"host": "medal-
       const { stats: cur, awards } = await fetchCurrent();
       let catError = '';
       try { await ensureCatalogue(false); } catch (e) { catError = e.message; }
+      // Torn's own award progress: self-limited to every 6 hours, runs beside the stats check without holding it up.
+      ensureProgress(false).then((p) => { if (p && p.fetched && Date.now() - p.fetched < 60000) render(true); }).catch(() => {});
       state = loadState();
       if (awards) { state.awards = awards; state.awardsAt = now; }
       state.catError = catError;
@@ -13895,6 +13964,7 @@ TUCC.register({"id": "medals", "where": "every page", "launch": {"host": "medal-
   function getMilestones(state) {
     const cat = store.get('mh_awards_cat', null);
     if (!cat) return null;
+    const prog = store.get('mh_progress', null);
     const known = !!state.awards;
     const owned = {
       honors: new Set(known ? state.awards.honors : []),
@@ -13907,15 +13977,24 @@ TUCC.register({"id": "medals", "where": "every page", "launch": {"host": "medal-
     const totals = { honors: [0, 0], medals: [0, 0] };
     for (const kind of ['medals', 'honors']) {
       for (const a of cat[kind] || []) {
-        const earned = owned[kind].has(a.id);
+        const p = prog && prog[kind] ? prog[kind][a.id] : null;                 // Torn's own [earned, current, target]
+        const live = p && !p[0] && p[1] != null && p[2] > 0;
+        const earned = owned[kind].has(a.id) || !!(p && p[0]);
         totals[kind][1]++;
         if (earned) totals[kind][0]++;
         const item = Object.assign({}, a, { kind, earned, key: `${kind}:${a.id}` });
         all.push(item);
         byId[item.key] = item;
         const m = matchAward(a.desc);
-        if (!m) { item.category = untrackedReason(a.desc); untracked.push(item); continue; }
+        if (!m) {
+          item.category = untrackedReason(a.desc);
+          // No stat to follow it by, but Torn counts it: show Torn's own figures.
+          if (live && !earned) { item.off = true; item.value = p[1]; item.threshold = p[2]; item.pct = Math.min(100, (p[1] / p[2]) * 100); item.remaining = Math.max(0, p[2] - p[1]); }
+          untracked.push(item); continue;
+        }
         item.threshold = m.threshold;
+        // Torn's target wins over the one read from the description, when both count in the same unit (their current matches the stat).
+        if (live) { const v = statValue(state, m.stat); if (v != null && Math.abs(p[1] - v) <= Math.max(1, Math.abs(v) * 0.02) && p[2] !== m.threshold) { item.threshold = p[2]; item.fixed = true; } }
         item.stat = m.stat;
         item.category = STAT_BY_KEY[m.stat] ? STAT_BY_KEY[m.stat].group : 'Other';
         (byStat[m.stat] = byStat[m.stat] || []).push(item);
@@ -13943,7 +14022,7 @@ TUCC.register({"id": "medals", "where": "every page", "launch": {"host": "medal-
       it.pct = v == null ? 0 : Math.min(100, (v / it.threshold) * 100);
       it.remaining = v == null ? null : Math.max(0, it.threshold - v);
     }
-    return { stats, untracked, all, byId, totals, known, fetched: cat.fetched };
+    return { stats, untracked, all, byId, totals, known, fetched: cat.fetched, progAt: prog ? prog.fetched || 0 : 0, progError: prog ? prog.error || '' : '' };
   }
 
   function goalView(state, goal, ms) {
@@ -14585,7 +14664,7 @@ TUCC.register({"id": "medals", "where": "every page", "launch": {"host": "medal-
     const rbtn = root.getElementById('mh-refresh');
     if (rbtn) rbtn.className = refreshing ? 'tool spin' : 'tool';
 
-    const inProgress = (kind) => (ms ? ms.all.filter((a) => a.kind === kind && !a.earned && a.stat).length : 0);
+    const inProgress = (kind) => (ms ? ms.all.filter((a) => a.kind === kind && !a.earned && (a.stat || a.off)).length : 0);
     const counts = {
       overview: dailyViews.length ? `${metCount}/${dailyViews.length}` : '',
       honors: ms ? String(inProgress('honors')) : '',
@@ -14632,7 +14711,7 @@ TUCC.register({"id": "medals", "where": "every page", "launch": {"host": "medal-
 
   function statusMark(a) {
     if (a.earned) return `<span class="st done">${icon('check')}</span>`;
-    if (a.stat && a.value != null) return `<span class="st part" style="--p:${Math.floor(a.pct)}"></span>`;
+    if ((a.stat || a.off) && a.value != null) return `<span class="st part" style="--p:${Math.floor(a.pct)}"></span>`;
     return '<span class="st"></span>';
   }
 
@@ -14766,8 +14845,8 @@ TUCC.register({"id": "medals", "where": "every page", "launch": {"host": "medal-
     if (!ms) return h + `<div class="ph"><div><h2>${title}</h2></div></div><div class="list"><div class="empty"><b>Award list not loaded yet</b>It loads with the first check.<br><button class="btn primary" data-a="reloadcat">Load now</button></div></div>`;
     const items = ms.all.filter((a) => a.kind === kind);
     const lists = {
-      progress: items.filter((a) => !a.earned && a.stat),
-      manual: items.filter((a) => !a.earned && !a.stat),
+      progress: items.filter((a) => !a.earned && (a.stat || a.off)),
+      manual: items.filter((a) => !a.earned && !a.stat && !a.off),
       earned: items.filter((a) => a.earned),
       all: items,
     };
@@ -14793,7 +14872,7 @@ TUCC.register({"id": "medals", "where": "every page", "launch": {"host": "medal-
         groups[c].sort((a, b) => (a.threshold || 0) - (b.threshold || 0) || a.name.localeCompare(b.name)).map((a) => awardRow(a, ctx)).join('')).join('');
     }
     return h + `<div class="list" id="a-list">${rows}</div><div class="empty" id="a-none" hidden>No matches.</div>
-      <p class="meta" style="margin-top:12px">Award list from Torn, checked ${new Date(ms.fetched).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}. <a href="#" class="link" data-a="reloadcat">Check again</a></p>`;
+      <p class="meta" style="margin-top:12px">Award list from Torn, checked ${new Date(ms.fetched).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}.${ms.progAt ? ` Torn's progress checked ${new Date(ms.progAt).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}.` : ''}${ms.progError ? ` ${esc(ms.progError)}` : ''} <a href="#" class="link" data-a="reloadcat">Check again</a></p>`;
   }
 
   function awardRow(a, ctx) {
@@ -14801,8 +14880,8 @@ TUCC.register({"id": "medals", "where": "every page", "launch": {"host": "medal-
     const isOpen = expanded === a.key;
     let right;
     if (a.earned) right = `<div class="prog"><span class="meta done">Earned</span></div>`;
-    else if (a.stat && a.value != null && a.remaining === 0) right = `<div class="prog"><span class="meta done">Requirement met</span><span class="line done"><i style="width:100%"></i></span></div>`;
-    else if (a.stat && a.value != null) right = progressCell(a.pct, a.value, a.threshold);
+    else if ((a.stat || a.off) && a.value != null && a.remaining === 0) right = `<div class="prog"><span class="meta done">Requirement met</span><span class="line done"><i style="width:100%"></i></span></div>`;
+    else if ((a.stat || a.off) && a.value != null) right = progressCell(a.pct, a.value, a.threshold);
     else if (a.stat) right = `<div class="prog"><span class="meta">No data yet</span></div>`;
     else right = `<div class="prog"><span class="meta">In-game only</span></div>`;
     const g = coveredBy(goals, a);
@@ -14817,6 +14896,9 @@ TUCC.register({"id": "medals", "where": "every page", "launch": {"host": "medal-
         if (x && x.list.length > 1) detail += `<span class="meta">Every award for ${esc(statLabel(a.stat).toLowerCase())}</span>` + pathHtml(a.stat, ms, a.key);
         detail += drugHtml(a.stat, x, a.value);
         if (STAT_NOTE[a.stat]) detail += `<div class="note">${icon('other')}<span>${esc(STAT_NOTE[a.stat])}</span></div>`;
+      } else if (a.off) {
+        detail += `<div class="kv"><div><b>${fmt(a.value)}</b>So far</div><div><b>${fmt(a.threshold)}</b>Needed</div><div><b>${fmt(a.remaining)}</b>To go</div></div>`;
+        detail += `<div class="note">${icon('other')}<span>Counted by Torn. Updated every few hours.</span></div>`;
       } else {
         detail += `<div class="note">${icon('other')}<span>The API has no counter for this, so it's done in-game. Add it as a goal and Medal Detector ticks it off as soon as it appears on your profile.</span></div>`;
       }
@@ -15177,6 +15259,7 @@ TUCC.register({"id": "medals", "where": "every page", "launch": {"host": "medal-
       else if (act === 'refresh') { e.preventDefault(); refresh(true); render(); }
       else if (act === 'reloadcat') {
         e.preventDefault();
+        { const pr = store.get('mh_progress', null); if (!pr || Date.now() - (pr.tried || 0) > 120000) ensureProgress(true).then(() => render(true)).catch(() => {}); }
         ensureCatalogue(true).then(() => { toast('Award list updated'); refresh(true); }).catch((err) => { const st = loadState(); st.catError = err.message; saveState(st); render(); });
       }
       else if (act === 'goalfor') openPicker(a.dataset.key);
@@ -21275,8 +21358,8 @@ TUCC.register({"id": "pricecheck", "where": "ranked war items: auction house, It
 
 });
 
-/* ===================== MODULE: War Room v1.0.0 (original script; TUCC changes listed in the build notes) ===================== */
-TUCC.register({"id": "warroom", "where": "every page", "launch": {"menu": "Open War Room", "icon": "⚔", "hint": "Ranked war overview"}, "name": "War Room", "short": "War Room", "runAt": "idle", "native": true, "desc": "Ranked war overview: enemy members by status with hospital timers, who is out next, both chains, and a chain-timeout alert. Names link to attack pages; you click.", "keyStore": "api_key", "keyLevel": "Public", "version": "1.0.0", "matches": ["https://www.torn.com/*"]}, function (GM_getValue, GM_setValue, GM_deleteValue, GM_listValues, GM_xmlhttpRequest, GM_addStyle, GM_registerMenuCommand, GM_notification, GM, GM_info, unsafeWindow, window, XMLHttpRequest, fetch, tucc, alert, confirm, prompt) {
+/* ===================== MODULE: War Room v1.1.0 (original script; TUCC changes listed in the build notes) ===================== */
+TUCC.register({"id": "warroom", "where": "every page", "launch": {"menu": "Open War Room", "icon": "⚔", "hint": "Ranked war overview"}, "name": "War Room", "short": "War Room", "runAt": "idle", "native": true, "desc": "Ranked war overview: enemy members by status with hospital timers, who is out next, both chains, and a chain-timeout alert. Names link to attack pages; you click.", "keyStore": "api_key", "keyLevel": "Public", "version": "1.1.0", "matches": ["https://www.torn.com/*"]}, function (GM_getValue, GM_setValue, GM_deleteValue, GM_listValues, GM_xmlhttpRequest, GM_addStyle, GM_registerMenuCommand, GM_notification, GM, GM_info, unsafeWindow, window, XMLHttpRequest, fetch, tucc, alert, confirm, prompt) {
 
 /*
  * Compliance notes
@@ -21284,13 +21367,46 @@ TUCC.register({"id": "warroom", "where": "every page", "launch": {"menu": "Open 
  *   requests to torn.com; attack links are ordinary links you click (one click = one page load).
  * - Refreshes every 30s only while the window is open. Chain watch (off by default, your switch)
  *   checks your own faction's chain every 30s while a Torn tab is visible.
- * - Stores only settings (filter, chain watch, a typed enemy faction ID) locally.
+ * - Stores only settings (filter, chain watch, a typed enemy faction ID, the stats column switch and sort) locally.
+ * - Optional "BSP stats" column (your switch, off by default, offered only if Battle Stats Predictor is set up in this
+ *   browser): shows the predictions and spies that BSP by TDup has already saved on this device. Read only. War Room
+ *   makes no request to BSP's server or any other site for it, does not read or send your BSP key, keeps no copy of the
+ *   figures, and includes none of BSP's code. BSP's own terms: https://www.torn.com/forums.php#/p=threads&f=67&t=16290324
  */
 
 if (typeof tucc === 'undefined' || !tucc) return;
 const { esc, fmt } = tucc;
-const S = { filter: GM_getValue('filter', 'all'), chainWatch: !!GM_getValue('chainWatch', false), enemyManual: GM_getValue('enemyManual', '') };
-const save = () => { GM_setValue('filter', S.filter); GM_setValue('chainWatch', S.chainWatch); GM_setValue('enemyManual', S.enemyManual); };
+const S = { filter: GM_getValue('filter', 'all'), chainWatch: !!GM_getValue('chainWatch', false), enemyManual: GM_getValue('enemyManual', ''), bsp: !!GM_getValue('bsp', false), bspSort: GM_getValue('bspSort', '') };
+const save = () => { GM_setValue('filter', S.filter); GM_setValue('chainWatch', S.chainWatch); GM_setValue('enemyManual', S.enemyManual); GM_setValue('bsp', S.bsp); GM_setValue('bspSort', S.bspSort); };
+
+/* ---------- predicted battle stats, from Battle Stats Predictor's own saved data on this device (read only) ---------- */
+const BSP = 'tdup.battleStatsPredictor.', BSP_LINK = 'https://www.torn.com/forums.php#/p=threads&f=67&t=16290324';
+const ls = (k) => { try { const v = (typeof localStorage !== 'undefined' ? localStorage : window.localStorage).getItem(k); return v == null ? undefined : v; } catch (e) { return undefined; } };
+const lsJson = (k) => { const v = ls(k); if (!v || v === '[object Object]') return null; try { return JSON.parse(v); } catch (e) { return null; } };
+// Is BSP set up in this browser? Only checks that its "key is valid" flag exists; the key itself is never read.
+const bspHere = () => ls(BSP + 'IsPrimaryAPIKeyValid') !== undefined;
+// The figure BSP would show for this player: a recent spy first, else its prediction while BSP still treats it as current (5 days).
+function bspOf(id) {
+  let spy = null;
+  for (const src of ['tornstats_', 'yata_']) { const o = lsJson(BSP + 'cache.spy_v2.' + src + id); if (o && Number(o.total) > 0 && (!spy || Number(o.timestamp) >= Number(spy.timestamp))) spy = o; }
+  const spyAt = spy ? Number(spy.timestamp) * 1000 : 0, keep = (parseInt(ls(BSP + 'DaysToUseTornStatsSpy'), 10) || 30) * 86400000;
+  if (spy && spyAt > Date.now() - keep) return { total: Number(spy.total), at: spyAt, spy: true };
+  const p = lsJson(BSP + 'cache.prediction.' + id);
+  if (!p || p.Result === 0 || p.Result === 4) return null;
+  const at = Date.parse(p.DateFetched || p.PredictionDate || '') || 0;
+  if (!at || at < Date.now() - 5 * 86400000) return null;
+  const tbs = parseInt(String(p.TBS == null ? '' : p.TBS).replace(/[^\d.]/g, ''), 10);
+  if (!(tbs > 0)) return null;
+  return spy && Number(spy.total) > tbs ? { total: Number(spy.total), at: spyAt, spy: true } : { total: tbs, at };
+}
+const myTotal = () => { const o = lsJson(BSP + 'playerBattleStats'); if (!o) return 0; const t = Number(o.TBS) || [o.Str, o.Def, o.Spd, o.Dex].reduce((a, v) => a + (Number(v) || 0), 0); return t > 0 ? t : 0; };
+const short = (n) => (n >= 1e12 ? (n / 1e12).toFixed(2) + 't' : n >= 1e9 ? (n / 1e9).toFixed(2) + 'b' : n >= 1e6 ? (n / 1e6).toFixed(1) + 'm' : n >= 1e3 ? Math.round(n / 1e3) + 'k' : String(Math.round(n)));
+function statCell(b, mine) {
+  if (!b) return '<span class="muted">–</span>';
+  const r = mine ? b.total / mine : 0, cls = !mine ? '' : r <= 0.75 ? 'good' : r <= 1.25 ? 'warn' : 'bad';
+  const days = Math.floor((Date.now() - b.at) / 86400000);
+  return `<span class="${cls}" title="${b.spy ? 'Spy' : 'Prediction'}, ${days ? days + 'd old' : 'today'}">${short(b.total)}${b.spy ? ' <span class="muted">S</span>' : ''}</span>`;
+}
 
 let own = null;          // { id, name }
 let data = { war: null, enemy: null, members: [], ourChain: null, theirChain: null, at: 0, error: '' };
@@ -21406,8 +21522,14 @@ function render() {
     ms.forEach((m) => { counts[group(m)] = (counts[group(m)] || 0) + 1; if (online(m) === 'online') counts.online++; });
     if (next.length) html += `<div class="card"><b style="font-size:12px">Out of hospital next</b><div class="row" style="margin-top:4px">${next.map((m) => `<span>${atk(m)} <span class="muted" data-until="${m.status.until}">${fmt.dur(m.status.until - nowS())}</span></span>`).join(' · ')}</div></div>`;
     html += `<div class="row" style="margin-bottom:6px">${filters.map(([k, l]) => `<button type="button" class="b${S.filter === k ? ' pri' : ''}" data-filter="${k}">${l}${k === 'all' ? ` ${ms.length}` : counts[k] != null ? ` ${counts[k]}` : ''}</button>`).join('')}</div>`;
-    const shown = sorted(ms).filter((m) => S.filter === 'all' || (S.filter === 'online' ? online(m) === 'online' : group(m) === S.filter));
-    html += `<table><thead><tr><th></th><th>Name</th><th class="n">Lvl</th><th>Status</th></tr></thead><tbody>${shown.map((m) => `<tr><td>${dot(m)}</td><td>${atk(m)}</td><td class="n">${fmt.num(m.level)}</td><td>${pill(m)}</td></tr>`).join('') || '<tr><td colspan="4" class="muted">Nobody in this filter.</td></tr>'}</tbody></table>`;
+    let shown = sorted(ms).filter((m) => S.filter === 'all' || (S.filter === 'online' ? online(m) === 'online' : group(m) === S.filter));
+    const here = bspHere(), col = here && S.bsp, mine = col ? myTotal() : 0, st = {};
+    if (col) {
+      shown.forEach((m) => { st[m.id] = bspOf(m.id); });
+      if (S.bspSort) shown = shown.slice().sort((a, b) => { const x = st[a.id], y = st[b.id]; if (!x || !y) return (x ? 0 : 1) - (y ? 0 : 1); return S.bspSort === 'up' ? x.total - y.total : y.total - x.total; });
+    }
+    if (here) html += `<label class="row note" style="margin:0 0 6px"><input type="checkbox" data-bsp${S.bsp ? ' checked' : ''}> <a href="${BSP_LINK}" target="_blank" rel="noopener">BSP</a> stats</label>`;
+    html += `<table><thead><tr><th></th><th>Name</th><th class="n">Lvl</th>${col ? `<th class="n"><a href="#" data-act="bspsort" title="Sort by stats">Stats${S.bspSort === 'up' ? ' ▴' : S.bspSort === 'down' ? ' ▾' : ''}</a></th>` : ''}<th>Status</th></tr></thead><tbody>${shown.map((m) => `<tr><td>${dot(m)}</td><td>${atk(m)}</td><td class="n">${fmt.num(m.level)}</td>${col ? `<td class="n">${statCell(st[m.id], mine)}</td>` : ''}<td>${pill(m)}</td></tr>`).join('') || `<tr><td colspan="${col ? 5 : 4}" class="muted">Nobody in this filter.</td></tr>`}</tbody></table>`;
     html += `<div class="note">${esc(d.enemy.name)} [${d.enemy.id}]${d.enemy.manual ? ` · <a href="#" data-act="clear">stop watching</a>` : ''} · updated ${d.at ? fmt.ago(Math.floor(d.at / 1000)) : '–'} · refreshes every 30s while open. Names open the attack page when you click them.</div>`;
   }
   w.set(html);
@@ -21418,6 +21540,7 @@ function onClick(e) {
   if (f) { S.filter = f.dataset.filter; save(); render(); return; }
   const a = e.target.closest('[data-act]');
   if (!a) return;
+  if (a.dataset.act === 'bspsort') { e.preventDefault(); S.bspSort = S.bspSort === '' ? 'up' : S.bspSort === 'up' ? 'down' : ''; save(); render(); return; }
   if (a.dataset.act === 'enemy') {
     const v = (w.body.querySelector('[data-enemy]') || {}).value || '';
     if (/^\d+$/.test(v.trim())) { S.enemyManual = v.trim(); save(); load(); }
@@ -21426,6 +21549,7 @@ function onClick(e) {
 }
 function onChange(e) {
   if (e.target.matches('[data-chainwatch]')) { S.chainWatch = e.target.checked; save(); startWatch(); }
+  if (e.target.matches('[data-bsp]')) { S.bsp = e.target.checked; save(); render(); }
 }
 
 // live countdowns (display only)

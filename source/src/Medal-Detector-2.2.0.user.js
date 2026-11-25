@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Medal Detector
 // @namespace    eaglewing91.torn.medaldetector
-// @version      2.1.1
+// @version      2.2.0
 // @description  Track every Torn honour and medal, see your next award for each stat, and set daily goals towards them. Uses only the official Torn API.
 // @author       Eaglewing [571041]
 // @license      MIT
@@ -21,14 +21,16 @@
 // ==/UserScript==
 
 /*
- * Medal Detector v2.1.1
+ * Medal Detector v2.2.0
  * Copyright (c) 2026 Eaglewing [571041]. Released under the MIT licence (see LICENSE).
  */
 
 /*
  * COMPLIANCE NOTES (Torn scripting rules)
  * - Every network request goes to api.torn.com: one user call per refresh (personalstats, profile,
- *   honors, medals, battlestats, workstats, education, perks) and torn -> honors, medals once a day.
+ *   honors, medals, battlestats, workstats, education, perks), torn -> honors, medals once a day, and
+ *   Torn's own progress for every award (API v2 user/medals and user/honors, one call per category,
+ *   25 calls spaced out, at most every 6 hours or when you press "Check again"; key sent in the header).
  *   Timed API calls are allowed. One Limited key covers everything.
  * - It also re-checks the API a few seconds after you click something in Torn or return to the tab.
  *   It only listens for your clicks; it never clicks, submits or requests Torn pages itself.
@@ -564,6 +566,71 @@
     return fresh;
   }
 
+  /* Torn's own progress for every honour and medal (API v2 'cat' filter): each category returns all its awards,
+     earned or not, with a current and target value where Torn tracks one. One call per category. */
+  const PROG_CATS = {
+    medals: ['general', 'attacking', 'crimes', 'commitment', 'rank', 'level', 'networth'],
+    honors: ['attacking', 'camo', 'weapons', 'education', 'crimes', 'drugs', 'jail', 'hospital', 'travel', 'gym', 'level', 'competitions', 'money', 'items', 'commitment', 'casino', 'missions', 'misc'],
+  };
+  const PROG_EVERY_MS = 6 * 3600000;
+  function apiV2(path) {
+    const key = getKey();
+    if (!key) return Promise.reject(new Error('No API key set'));
+    return new Promise((resolve, reject) => {
+      GM_xmlhttpRequest({
+        method: 'GET',
+        url: `${API_ROOT}v2/${path}${path.includes('?') ? '&' : '?'}comment=MedalDetector`,
+        headers: { Authorization: 'ApiKey ' + key, Accept: 'application/json' },
+        timeout: 15000,
+        onload: (r) => {
+          try {
+            const d = JSON.parse(r.responseText);
+            if (d && d.error) { const e = new Error(d.error.code === 16 ? "Your key's access level is too low for award progress." : `API error ${d.error.code}: ${d.error.error}`); e.code = d.error.code; reject(e); }
+            else resolve(d);
+          } catch (e) { reject(new Error('Bad API response')); }
+        },
+        onerror: () => reject(new Error('Network error')),
+        ontimeout: () => reject(new Error('API timed out')),
+      });
+    });
+  }
+  // One award's progress, kept small: [earned 0/1, current or null, target or null].
+  function progEntry(a) {
+    const p = a && a.progress && typeof a.progress === 'object' ? a.progress : null;
+    const n = (v) => (typeof v === 'number' && isFinite(v) ? v : null);
+    return [a.is_unlocked ? 1 : 0, p ? n(p.current) : null, p ? n(p.target) : null];
+  }
+  let progBusy = false;
+  async function ensureProgress(force) {
+    const cur = store.get('mh_progress', null);
+    if (progBusy || !getKey()) return cur;
+    if (!force && cur && Date.now() - (cur.tried || 0) < PROG_EVERY_MS) return cur;
+    progBusy = true;
+    // claim the slot first so other tabs don't run the same set of calls
+    const out = { fetched: cur ? cur.fetched || 0 : 0, tried: Date.now(), error: '', honors: Object.assign({}, cur && cur.honors), medals: Object.assign({}, cur && cur.medals) };
+    store.set('mh_progress', out);
+    let ok = 0;
+    try {
+      outer: for (const kind of ['medals', 'honors']) {
+        for (const cat of PROG_CATS[kind]) {
+          try {
+            const d = await apiV2(`user/${kind}?cat=${cat}`);
+            for (const a of (d && d[kind]) || []) { const id = Number(a && a.id); if (!isNaN(id)) out[kind][id] = progEntry(a); }
+            ok++;
+          } catch (e) {
+            out.error = e.message;
+            if ([1, 2, 5, 8, 10, 13, 16, 18].includes(e.code)) break outer;   // key problem or rate limit: stop, try again next time
+          }
+          await new Promise((r) => setTimeout(r, 650));
+        }
+      }
+      if (ok) out.fetched = Date.now();
+      if (ok === PROG_CATS.medals.length + PROG_CATS.honors.length) out.error = '';
+      store.set('mh_progress', out);
+    } finally { progBusy = false; }
+    return out;
+  }
+
   // Historical stats at a timestamp, in chunks of 10 stat names (personal stats only).
   async function fetchAt(ts, keys) {
     keys = keys.filter((k) => !isVirtual(k));
@@ -615,6 +682,8 @@
       const { stats: cur, awards } = await fetchCurrent();
       let catError = '';
       try { await ensureCatalogue(false); } catch (e) { catError = e.message; }
+      // Torn's own award progress: self-limited to every 6 hours, runs beside the stats check without holding it up.
+      ensureProgress(false).then((p) => { if (p && p.fetched && Date.now() - p.fetched < 60000) render(true); }).catch(() => {});
       state = loadState();
       if (awards) { state.awards = awards; state.awardsAt = now; }
       state.catError = catError;
@@ -705,6 +774,7 @@
   function getMilestones(state) {
     const cat = store.get('mh_awards_cat', null);
     if (!cat) return null;
+    const prog = store.get('mh_progress', null);
     const known = !!state.awards;
     const owned = {
       honors: new Set(known ? state.awards.honors : []),
@@ -717,15 +787,24 @@
     const totals = { honors: [0, 0], medals: [0, 0] };
     for (const kind of ['medals', 'honors']) {
       for (const a of cat[kind] || []) {
-        const earned = owned[kind].has(a.id);
+        const p = prog && prog[kind] ? prog[kind][a.id] : null;                 // Torn's own [earned, current, target]
+        const live = p && !p[0] && p[1] != null && p[2] > 0;
+        const earned = owned[kind].has(a.id) || !!(p && p[0]);
         totals[kind][1]++;
         if (earned) totals[kind][0]++;
         const item = Object.assign({}, a, { kind, earned, key: `${kind}:${a.id}` });
         all.push(item);
         byId[item.key] = item;
         const m = matchAward(a.desc);
-        if (!m) { item.category = untrackedReason(a.desc); untracked.push(item); continue; }
+        if (!m) {
+          item.category = untrackedReason(a.desc);
+          // No stat to follow it by, but Torn counts it: show Torn's own figures.
+          if (live && !earned) { item.off = true; item.value = p[1]; item.threshold = p[2]; item.pct = Math.min(100, (p[1] / p[2]) * 100); item.remaining = Math.max(0, p[2] - p[1]); }
+          untracked.push(item); continue;
+        }
         item.threshold = m.threshold;
+        // Torn's target wins over the one read from the description, when both count in the same unit (their current matches the stat).
+        if (live) { const v = statValue(state, m.stat); if (v != null && Math.abs(p[1] - v) <= Math.max(1, Math.abs(v) * 0.02) && p[2] !== m.threshold) { item.threshold = p[2]; item.fixed = true; } }
         item.stat = m.stat;
         item.category = STAT_BY_KEY[m.stat] ? STAT_BY_KEY[m.stat].group : 'Other';
         (byStat[m.stat] = byStat[m.stat] || []).push(item);
@@ -753,7 +832,7 @@
       it.pct = v == null ? 0 : Math.min(100, (v / it.threshold) * 100);
       it.remaining = v == null ? null : Math.max(0, it.threshold - v);
     }
-    return { stats, untracked, all, byId, totals, known, fetched: cat.fetched };
+    return { stats, untracked, all, byId, totals, known, fetched: cat.fetched, progAt: prog ? prog.fetched || 0 : 0, progError: prog ? prog.error || '' : '' };
   }
 
   function goalView(state, goal, ms) {
@@ -1395,7 +1474,7 @@
     const rbtn = root.getElementById('mh-refresh');
     if (rbtn) rbtn.className = refreshing ? 'tool spin' : 'tool';
 
-    const inProgress = (kind) => (ms ? ms.all.filter((a) => a.kind === kind && !a.earned && a.stat).length : 0);
+    const inProgress = (kind) => (ms ? ms.all.filter((a) => a.kind === kind && !a.earned && (a.stat || a.off)).length : 0);
     const counts = {
       overview: dailyViews.length ? `${metCount}/${dailyViews.length}` : '',
       honors: ms ? String(inProgress('honors')) : '',
@@ -1442,7 +1521,7 @@
 
   function statusMark(a) {
     if (a.earned) return `<span class="st done">${icon('check')}</span>`;
-    if (a.stat && a.value != null) return `<span class="st part" style="--p:${Math.floor(a.pct)}"></span>`;
+    if ((a.stat || a.off) && a.value != null) return `<span class="st part" style="--p:${Math.floor(a.pct)}"></span>`;
     return '<span class="st"></span>';
   }
 
@@ -1576,8 +1655,8 @@
     if (!ms) return h + `<div class="ph"><div><h2>${title}</h2></div></div><div class="list"><div class="empty"><b>Award list not loaded yet</b>It loads with the first check.<br><button class="btn primary" data-a="reloadcat">Load now</button></div></div>`;
     const items = ms.all.filter((a) => a.kind === kind);
     const lists = {
-      progress: items.filter((a) => !a.earned && a.stat),
-      manual: items.filter((a) => !a.earned && !a.stat),
+      progress: items.filter((a) => !a.earned && (a.stat || a.off)),
+      manual: items.filter((a) => !a.earned && !a.stat && !a.off),
       earned: items.filter((a) => a.earned),
       all: items,
     };
@@ -1603,7 +1682,7 @@
         groups[c].sort((a, b) => (a.threshold || 0) - (b.threshold || 0) || a.name.localeCompare(b.name)).map((a) => awardRow(a, ctx)).join('')).join('');
     }
     return h + `<div class="list" id="a-list">${rows}</div><div class="empty" id="a-none" hidden>No matches.</div>
-      <p class="meta" style="margin-top:12px">Award list from Torn, checked ${new Date(ms.fetched).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}. <a href="#" class="link" data-a="reloadcat">Check again</a></p>`;
+      <p class="meta" style="margin-top:12px">Award list from Torn, checked ${new Date(ms.fetched).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}.${ms.progAt ? ` Torn's progress checked ${new Date(ms.progAt).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}.` : ''}${ms.progError ? ` ${esc(ms.progError)}` : ''} <a href="#" class="link" data-a="reloadcat">Check again</a></p>`;
   }
 
   function awardRow(a, ctx) {
@@ -1611,8 +1690,8 @@
     const isOpen = expanded === a.key;
     let right;
     if (a.earned) right = `<div class="prog"><span class="meta done">Earned</span></div>`;
-    else if (a.stat && a.value != null && a.remaining === 0) right = `<div class="prog"><span class="meta done">Requirement met</span><span class="line done"><i style="width:100%"></i></span></div>`;
-    else if (a.stat && a.value != null) right = progressCell(a.pct, a.value, a.threshold);
+    else if ((a.stat || a.off) && a.value != null && a.remaining === 0) right = `<div class="prog"><span class="meta done">Requirement met</span><span class="line done"><i style="width:100%"></i></span></div>`;
+    else if ((a.stat || a.off) && a.value != null) right = progressCell(a.pct, a.value, a.threshold);
     else if (a.stat) right = `<div class="prog"><span class="meta">No data yet</span></div>`;
     else right = `<div class="prog"><span class="meta">In-game only</span></div>`;
     const g = coveredBy(goals, a);
@@ -1627,6 +1706,9 @@
         if (x && x.list.length > 1) detail += `<span class="meta">Every award for ${esc(statLabel(a.stat).toLowerCase())}</span>` + pathHtml(a.stat, ms, a.key);
         detail += drugHtml(a.stat, x, a.value);
         if (STAT_NOTE[a.stat]) detail += `<div class="note">${icon('other')}<span>${esc(STAT_NOTE[a.stat])}</span></div>`;
+      } else if (a.off) {
+        detail += `<div class="kv"><div><b>${fmt(a.value)}</b>So far</div><div><b>${fmt(a.threshold)}</b>Needed</div><div><b>${fmt(a.remaining)}</b>To go</div></div>`;
+        detail += `<div class="note">${icon('other')}<span>Counted by Torn. Updated every few hours.</span></div>`;
       } else {
         detail += `<div class="note">${icon('other')}<span>The API has no counter for this, so it's done in-game. Add it as a goal and Medal Detector ticks it off as soon as it appears on your profile.</span></div>`;
       }
@@ -1987,6 +2069,7 @@
       else if (act === 'refresh') { e.preventDefault(); refresh(true); render(); }
       else if (act === 'reloadcat') {
         e.preventDefault();
+        { const pr = store.get('mh_progress', null); if (!pr || Date.now() - (pr.tried || 0) > 120000) ensureProgress(true).then(() => render(true)).catch(() => {}); }
         ensureCatalogue(true).then(() => { toast('Award list updated'); refresh(true); }).catch((err) => { const st = loadState(); st.catError = err.message; saveState(st); render(); });
       }
       else if (act === 'goalfor') openPicker(a.dataset.key);

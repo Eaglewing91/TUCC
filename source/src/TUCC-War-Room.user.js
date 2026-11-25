@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         TUCC War Room
 // @namespace    eaglewing.torn.tucc.warroom
-// @version      1.0.0
+// @version      1.1.0
 // @description  Ranked war overview: enemy members by status with hospital timers, who is out next, both chains, and an optional chain-timeout alert. Names are plain links to attack pages that you click yourself. API only (Public key).
 // @author       Eaglewing [571041]
 // @match        https://www.torn.com/*
@@ -16,13 +16,46 @@
  *   requests to torn.com; attack links are ordinary links you click (one click = one page load).
  * - Refreshes every 30s only while the window is open. Chain watch (off by default, your switch)
  *   checks your own faction's chain every 30s while a Torn tab is visible.
- * - Stores only settings (filter, chain watch, a typed enemy faction ID) locally.
+ * - Stores only settings (filter, chain watch, a typed enemy faction ID, the stats column switch and sort) locally.
+ * - Optional "BSP stats" column (your switch, off by default, offered only if Battle Stats Predictor is set up in this
+ *   browser): shows the predictions and spies that BSP by TDup has already saved on this device. Read only. War Room
+ *   makes no request to BSP's server or any other site for it, does not read or send your BSP key, keeps no copy of the
+ *   figures, and includes none of BSP's code. BSP's own terms: https://www.torn.com/forums.php#/p=threads&f=67&t=16290324
  */
 
 if (typeof tucc === 'undefined' || !tucc) return;
 const { esc, fmt } = tucc;
-const S = { filter: GM_getValue('filter', 'all'), chainWatch: !!GM_getValue('chainWatch', false), enemyManual: GM_getValue('enemyManual', '') };
-const save = () => { GM_setValue('filter', S.filter); GM_setValue('chainWatch', S.chainWatch); GM_setValue('enemyManual', S.enemyManual); };
+const S = { filter: GM_getValue('filter', 'all'), chainWatch: !!GM_getValue('chainWatch', false), enemyManual: GM_getValue('enemyManual', ''), bsp: !!GM_getValue('bsp', false), bspSort: GM_getValue('bspSort', '') };
+const save = () => { GM_setValue('filter', S.filter); GM_setValue('chainWatch', S.chainWatch); GM_setValue('enemyManual', S.enemyManual); GM_setValue('bsp', S.bsp); GM_setValue('bspSort', S.bspSort); };
+
+/* ---------- predicted battle stats, from Battle Stats Predictor's own saved data on this device (read only) ---------- */
+const BSP = 'tdup.battleStatsPredictor.', BSP_LINK = 'https://www.torn.com/forums.php#/p=threads&f=67&t=16290324';
+const ls = (k) => { try { const v = (typeof localStorage !== 'undefined' ? localStorage : window.localStorage).getItem(k); return v == null ? undefined : v; } catch (e) { return undefined; } };
+const lsJson = (k) => { const v = ls(k); if (!v || v === '[object Object]') return null; try { return JSON.parse(v); } catch (e) { return null; } };
+// Is BSP set up in this browser? Only checks that its "key is valid" flag exists; the key itself is never read.
+const bspHere = () => ls(BSP + 'IsPrimaryAPIKeyValid') !== undefined;
+// The figure BSP would show for this player: a recent spy first, else its prediction while BSP still treats it as current (5 days).
+function bspOf(id) {
+  let spy = null;
+  for (const src of ['tornstats_', 'yata_']) { const o = lsJson(BSP + 'cache.spy_v2.' + src + id); if (o && Number(o.total) > 0 && (!spy || Number(o.timestamp) >= Number(spy.timestamp))) spy = o; }
+  const spyAt = spy ? Number(spy.timestamp) * 1000 : 0, keep = (parseInt(ls(BSP + 'DaysToUseTornStatsSpy'), 10) || 30) * 86400000;
+  if (spy && spyAt > Date.now() - keep) return { total: Number(spy.total), at: spyAt, spy: true };
+  const p = lsJson(BSP + 'cache.prediction.' + id);
+  if (!p || p.Result === 0 || p.Result === 4) return null;
+  const at = Date.parse(p.DateFetched || p.PredictionDate || '') || 0;
+  if (!at || at < Date.now() - 5 * 86400000) return null;
+  const tbs = parseInt(String(p.TBS == null ? '' : p.TBS).replace(/[^\d.]/g, ''), 10);
+  if (!(tbs > 0)) return null;
+  return spy && Number(spy.total) > tbs ? { total: Number(spy.total), at: spyAt, spy: true } : { total: tbs, at };
+}
+const myTotal = () => { const o = lsJson(BSP + 'playerBattleStats'); if (!o) return 0; const t = Number(o.TBS) || [o.Str, o.Def, o.Spd, o.Dex].reduce((a, v) => a + (Number(v) || 0), 0); return t > 0 ? t : 0; };
+const short = (n) => (n >= 1e12 ? (n / 1e12).toFixed(2) + 't' : n >= 1e9 ? (n / 1e9).toFixed(2) + 'b' : n >= 1e6 ? (n / 1e6).toFixed(1) + 'm' : n >= 1e3 ? Math.round(n / 1e3) + 'k' : String(Math.round(n)));
+function statCell(b, mine) {
+  if (!b) return '<span class="muted">–</span>';
+  const r = mine ? b.total / mine : 0, cls = !mine ? '' : r <= 0.75 ? 'good' : r <= 1.25 ? 'warn' : 'bad';
+  const days = Math.floor((Date.now() - b.at) / 86400000);
+  return `<span class="${cls}" title="${b.spy ? 'Spy' : 'Prediction'}, ${days ? days + 'd old' : 'today'}">${short(b.total)}${b.spy ? ' <span class="muted">S</span>' : ''}</span>`;
+}
 
 let own = null;          // { id, name }
 let data = { war: null, enemy: null, members: [], ourChain: null, theirChain: null, at: 0, error: '' };
@@ -138,8 +171,14 @@ function render() {
     ms.forEach((m) => { counts[group(m)] = (counts[group(m)] || 0) + 1; if (online(m) === 'online') counts.online++; });
     if (next.length) html += `<div class="card"><b style="font-size:12px">Out of hospital next</b><div class="row" style="margin-top:4px">${next.map((m) => `<span>${atk(m)} <span class="muted" data-until="${m.status.until}">${fmt.dur(m.status.until - nowS())}</span></span>`).join(' · ')}</div></div>`;
     html += `<div class="row" style="margin-bottom:6px">${filters.map(([k, l]) => `<button type="button" class="b${S.filter === k ? ' pri' : ''}" data-filter="${k}">${l}${k === 'all' ? ` ${ms.length}` : counts[k] != null ? ` ${counts[k]}` : ''}</button>`).join('')}</div>`;
-    const shown = sorted(ms).filter((m) => S.filter === 'all' || (S.filter === 'online' ? online(m) === 'online' : group(m) === S.filter));
-    html += `<table><thead><tr><th></th><th>Name</th><th class="n">Lvl</th><th>Status</th></tr></thead><tbody>${shown.map((m) => `<tr><td>${dot(m)}</td><td>${atk(m)}</td><td class="n">${fmt.num(m.level)}</td><td>${pill(m)}</td></tr>`).join('') || '<tr><td colspan="4" class="muted">Nobody in this filter.</td></tr>'}</tbody></table>`;
+    let shown = sorted(ms).filter((m) => S.filter === 'all' || (S.filter === 'online' ? online(m) === 'online' : group(m) === S.filter));
+    const here = bspHere(), col = here && S.bsp, mine = col ? myTotal() : 0, st = {};
+    if (col) {
+      shown.forEach((m) => { st[m.id] = bspOf(m.id); });
+      if (S.bspSort) shown = shown.slice().sort((a, b) => { const x = st[a.id], y = st[b.id]; if (!x || !y) return (x ? 0 : 1) - (y ? 0 : 1); return S.bspSort === 'up' ? x.total - y.total : y.total - x.total; });
+    }
+    if (here) html += `<label class="row note" style="margin:0 0 6px"><input type="checkbox" data-bsp${S.bsp ? ' checked' : ''}> <a href="${BSP_LINK}" target="_blank" rel="noopener">BSP</a> stats</label>`;
+    html += `<table><thead><tr><th></th><th>Name</th><th class="n">Lvl</th>${col ? `<th class="n"><a href="#" data-act="bspsort" title="Sort by stats">Stats${S.bspSort === 'up' ? ' ▴' : S.bspSort === 'down' ? ' ▾' : ''}</a></th>` : ''}<th>Status</th></tr></thead><tbody>${shown.map((m) => `<tr><td>${dot(m)}</td><td>${atk(m)}</td><td class="n">${fmt.num(m.level)}</td>${col ? `<td class="n">${statCell(st[m.id], mine)}</td>` : ''}<td>${pill(m)}</td></tr>`).join('') || `<tr><td colspan="${col ? 5 : 4}" class="muted">Nobody in this filter.</td></tr>`}</tbody></table>`;
     html += `<div class="note">${esc(d.enemy.name)} [${d.enemy.id}]${d.enemy.manual ? ` · <a href="#" data-act="clear">stop watching</a>` : ''} · updated ${d.at ? fmt.ago(Math.floor(d.at / 1000)) : '–'} · refreshes every 30s while open. Names open the attack page when you click them.</div>`;
   }
   w.set(html);
@@ -150,6 +189,7 @@ function onClick(e) {
   if (f) { S.filter = f.dataset.filter; save(); render(); return; }
   const a = e.target.closest('[data-act]');
   if (!a) return;
+  if (a.dataset.act === 'bspsort') { e.preventDefault(); S.bspSort = S.bspSort === '' ? 'up' : S.bspSort === 'up' ? 'down' : ''; save(); render(); return; }
   if (a.dataset.act === 'enemy') {
     const v = (w.body.querySelector('[data-enemy]') || {}).value || '';
     if (/^\d+$/.test(v.trim())) { S.enemyManual = v.trim(); save(); load(); }
@@ -158,6 +198,7 @@ function onClick(e) {
 }
 function onChange(e) {
   if (e.target.matches('[data-chainwatch]')) { S.chainWatch = e.target.checked; save(); startWatch(); }
+  if (e.target.matches('[data-bsp]')) { S.bsp = e.target.checked; save(); render(); }
 }
 
 // live countdowns (display only)

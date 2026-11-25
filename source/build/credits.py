@@ -42,7 +42,11 @@ CREDITS = [
         'TUCC version rewritten to run on TUCC\'s API engine, alerts and layout (the original states no licence, so its code isn\'t copied)'],
          link='https://greasyfork.org/en/scripts/565775-torn-big-al-s-special-ammo-alert'),
     # ---- built for TUCC ----
-    dict(module='War Room', author=[ME], licence='MIT', tucc=True),
+    dict(module='War Room', author=[ME], licence='MIT', tucc=True, based=[
+        'Optional "BSP stats" column: shows the battle stats predictions and spies that Battle Stats Predictor (BSP) by TDup has saved in your own browser. BSP and its prediction service are TDup\'s work. TUCC includes none of BSP\'s code, makes no requests to BSP\'s server, and shows nothing unless you run BSP yourself'],
+         link='https://www.torn.com/forums.php#/p=threads&f=67&t=16290324'),
+    dict(module='Combat Desk', author=[ME], licence='GNU GPLv3', tucc=True, based=[
+        'Weapon bonus, armour set and special ammo rules from the Torn Wiki (Weapon Bonus, Armor, Ammo)']),
     dict(module='Crimes Analyst', author=[ME], licence='MIT', tucc=True),
     dict(module='Company Manager', author=[ME], licence='MIT', tucc=True),
     dict(module='Market Watcher', author=[ME], licence='MIT', tucc=True),

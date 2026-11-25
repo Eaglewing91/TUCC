@@ -2,6 +2,22 @@
 
 All dates are 2026. Versions before 0.14.4 were private test builds.
 
+## 0.16.2-tablet · 25 November
+
+**War Room 1.1.0: BSP stats column**
+- **For players who run Battle Stats Predictor (BSP) by TDup.** A new "BSP stats" switch adds a Stats column to the enemy list, showing each player's predicted total battle stats.
+- **Same figures as BSP.** It reads the predictions and spies BSP has already saved in your browser: a recent spy first (marked S), otherwise the prediction while BSP still treats it as current (5 days). Hover a figure for its age.
+- **Colour and sort.** Figures are tinted against your own total as saved by BSP (green weaker, amber similar, red stronger). Press the Stats heading to sort weakest or strongest first.
+- **Read only.** War Room makes no request to BSP's server, does not read or send your BSP key, and keeps no copy of the figures. A player BSP hasn't looked up shows a dash; opening the enemy faction's page once with BSP on fills them in.
+- **Without BSP** nothing changes: no switch and no column.
+
+**Medal Detector 2.2.0: Torn's own award progress**
+- **More awards show progress.** Torn's API now reports progress for honours and medals directly. Awards that Medal Detector could not follow from your stats, and listed as "In-game only", now show a progress bar with Torn's current and target figures wherever Torn tracks one.
+- **Targets come from Torn.** For awards followed from a stat, Torn's target replaces the one read from the award's description when the two count the same thing, so a changed requirement is picked up without an update.
+- **Earned status** also uses Torn's own flag for each award.
+- **How it is fetched:** one API call per award category (7 for medals, 18 for honours), spaced out, at most every 6 hours or when you press "Check again". The key is sent in the request header. Your stats check still runs every minute as before.
+- **Key:** the same Limited key as before. If a key is too low for award progress, it stops after one call and says so at the foot of the list.
+
 ## 0.16.1-tablet · 25 November
 
 **Combat Desk**

@@ -28,7 +28,8 @@ Torn Ultimate Command Centre [TUCC] by Eaglewing [571041]. Every module, who wro
 
 | Module | Author | Licence | Builds on / thanks to |
 |---|---|---|---|
-| War Room | Eaglewing [571041] | MIT | – |
+| War Room | Eaglewing [571041] | MIT | Optional "BSP stats" column: shows the battle stats predictions and spies that Battle Stats Predictor (BSP) by TDup has saved in your own browser. BSP and its prediction service are TDup's work. TUCC includes none of BSP's code, makes no requests to BSP's server, and shows nothing unless you run BSP yourself<br>https://www.torn.com/forums.php#/p=threads&f=67&t=16290324 |
+| Combat Desk | Eaglewing [571041] | GNU GPLv3 | Weapon bonus, armour set and special ammo rules from the Torn Wiki (Weapon Bonus, Armor, Ammo) |
 | Crimes Analyst | Eaglewing [571041] | MIT | – |
 | Company Manager | Eaglewing [571041] | MIT | – |
 | Market Watcher | Eaglewing [571041] | MIT | – |
