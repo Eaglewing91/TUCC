@@ -2,6 +2,20 @@
 
 All dates are 2026. Versions before 0.14.4 were private test builds.
 
+## 0.16.0-tablet · 25 November
+
+**Combat Desk**
+- **Needles:** Epinephrine, Melatonin, Serotonin and Tyrosine are recognised in your temporary slot and always used first, ahead of an Assassinate opener.
+- **Weapon mods:** the mods on each weapon are read and shown beside its bonuses, and listed with their effects in settings. Critical hit rate from mods adds to the ranking.
+- **Damage over time is valued:** each Poison, Bleed, Burn or Lacerate weapon's chance, total and length are read from its own text. It is used only when a turn with it is worth more than a turn with your main weapon, with two tries (three for a low chance).
+- **Effects on the opponent:** status icons are read, so an effect already on them is not re-applied, and a debuff the page shows is carried on to three stacks.
+- **Action log:** each turn's result is read from the log as a hit or a miss, with their health dropping as the fallback. Effects named in the log are counted.
+- **Opponent armour:** armour shown in the opponent's panel is recognised by set (EOD, Riot, Assault, Dune, Delta, Marauder, Sentinel, Vanguard). The ranking allows for it: Puncture and Penetrate against heavy armour, guns against Riot, melee against Assault. A temporary their helmet blocks is left out, and Delta drops the debuff step. With a key, pieces shown only as pictures are named by one Torn API read each.
+- **Opponent memory:** the weapons and armour last seen on an opponent are saved on your device (newest 150) and used the next time you attack them, marked "saved".
+- **Reload and ammo:** clip, clip size and spare clips are read. An empty clip shows "Reload"; a new **Reload** switch lets the plan move to another weapon. A Specialist weapon is never reloaded.
+- **Start fight:** Torn's own Start fight box is hidden while Combat Desk is showing; the Combat Desk button starts the fight.
+- **New look:** the button is centred under the two fighters, with modes and plan to its left and your weapons, mods, perk boosts and the opponent's armour to its right. Collapsing it leaves only the centred button. On phones the button spans the full width with the two panels beneath it.
+
 ## 0.15.1-tablet · 25 November
 
 - **Tablet: switched-off modules are now shown.** A new **Off** row lists them, so a new module that starts switched off (such as Combat Desk) is easy to find. Tapping one says how to switch it on.

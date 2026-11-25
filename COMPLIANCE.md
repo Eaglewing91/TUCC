@@ -1,8 +1,8 @@
 # TUCC compliance record
 
-First full check: v0.10.7-tablet (2 November 2026). Last updated: **v0.15.1-tablet (25 November 2026)**.
+First full check: v0.10.7-tablet (2 November 2026). Last updated: **v0.16.0-tablet (25 November 2026)**.
 
-## Current status: v0.15.1
+## Current status: v0.16.0
 
 | Check (tested on 10 mock Torn pages, 5 simulated minutes each, every module on) | Result |
 |---|---|
@@ -12,7 +12,7 @@ First full check: v0.10.7-tablet (2 November 2026). Last updated: **v0.15.1-tabl
 | Torn API calls | Through one engine, 60 a minute by default. Key in a request header on API v2; in the address on API v1, still used by Lockpick, Torn Pulse, Medal Detector, Company Manager and Market Watcher. |
 | Hidden tabs | No API calls from any module while the tab is hidden (0 in 5 simulated minutes on every page). Each checks once when you come back to the tab. |
 | Torn says slow down | An API error for too many requests, or an HTTP 429, 502, 503 or 504 reply, pauses every module and tab (60 seconds for 429, 30 for the others, longer if Torn's reply says so). |
-| Combat Desk (new, off by default) | Tested on a mock attack page: nothing is pressed without input; each real press passes exactly one click to one of Torn's own controls (Start fight, one weapon, or the finish option); script-made clicks are ignored; a held key gives one action; it makes no requests to torn.com. With a key it makes two Torn API reads (user/perks, user/equipment) when the attack page opens and the tab is visible, through the shared engine, and none after. Not yet tested on a live fight. While it is on, Attack Hybrid Ultimate does not run. |
+| Combat Desk (new, off by default) | Tested on a mock attack page: nothing is pressed without input; each real press passes exactly one click to one of Torn's own controls (Start fight, one weapon, or the finish option); script-made clicks are ignored; a held key gives one action; it makes no requests to torn.com. With a key it makes two Torn API reads (user/perks, user/equipment) when the attack page opens and the tab is visible, plus one torn/{ids}/items read to name armour pieces it has not seen before (saved, so each piece is asked once), all through the shared engine. Torn's own Start fight box is hidden while Combat Desk shows (visual only). It reads effect icons, the action log and the opponent's panel on the page you are viewing; it saves the weapons and armour last seen on up to 150 opponents, on your device only. Not yet tested on a live fight. While it is on, Attack Hybrid Ultimate does not run. |
 | Modules | 21. Removed since the first check: Stock Ledger, Mugger Manager, Attack Interceptor Pro, Armoury & Vault Tracker (their saved data is cleared automatically). Added: TORN Auction Price Checker, Big Al's Watch, Defib, Combat Desk. |
 
 ### Torn PDA (new in v0.14.0)
