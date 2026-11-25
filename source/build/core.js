@@ -784,6 +784,8 @@ const TUCC = (() => {
         :host([data-tt-under]:not([data-tt-embed])) ${P},:host([data-tt-under]:not([data-tt-embed])) .scrim{z-index:2147482000 !important}`;
     }
     if (!isEnabled(mod)) { state[mod.id].status = 'off'; return; }
+    // Two tools for the same controls never run together: this one steps aside while the other is switched on.
+    if (mod.yieldTo && cfg.enabled[mod.yieldTo] === true) { state[mod.id].status = 'yield'; return; }
     if (!matches(mod)) { state[mod.id].status = 'not-here'; return; }
     whenTime(mod.runAt, () => {
       // A module added after you saved your keys starts with no key: give it the key from its slot
@@ -1119,6 +1121,7 @@ const TUCC = (() => {
     const body = tabletView(m.name);
     const st = state[m.id].status;
     const why = st === 'off' ? 'This module is switched off. Switch it on in Settings, then reload the page.'
+      : st === 'yield' ? `Paused while ${esc((modules.find((x) => x.id === m.yieldTo) || {}).name || 'another module')} is on.`
       : st === 'error' ? `This module failed to start: ${esc(state[m.id].error)}`
       : st === 'not-here' || away ? (!m.autoOpen ? `This module works on ${esc(m.where || 'other pages')}. Its tools appear there by themselves.` : `This module opens on ${esc(m.where || 'other pages')}. Press the button below and it opens there.`)
       : `This module works on ${esc(m.where || 'this page')}. Its tools are on the page itself.`;
@@ -1225,6 +1228,7 @@ const TUCC = (() => {
     if (s.status === 'running') return '<span class="pill p-run">Ready</span>';
     if (s.status === 'error') return `<span class="pill p-err" title="${esc(s.error)}">Error</span>`;
     if (s.status === 'off') return '<span class="pill p-off">Off</span>';
+    if (s.status === 'yield') return '<span class="pill p-off">Paused</span>';
     return `<span class="pill p-here">Works on ${esc(m.where || 'other pages')}</span>`;
   }
   /* ---------- key check ----------
@@ -1344,7 +1348,7 @@ const TUCC = (() => {
   function tosHTML() {
     const ext = modules.filter((m) => m.tos && m.tos.external).map((m) => m.tos.external);   // trusted text from the build, contains links
     return `<table class="tos"><tbody>
-      <tr><th>Data Storage</th><td>Only locally: in your userscript manager, plus this browser's storage for a few modules: Attack Hybrid Ultimate (button layout, key binds, attack type), Cash Desk (your presets), Torn Spectrum (settings), OpenMarket (filter), Ranked Notes (notes), Item Pins (pins), TORN Auction Price Checker (settings, recent searches, window position) and OC Command Centre (join-audit history). Defib keeps your revive log (8 days) and your faction's incoming revive log (50 hours). Travel 2.Dough keeps 25 hours of price history and the pay from your last 60 hunts. OpenMarket keeps the item market listings your page loads in memory only, to label that page, and never saves them. TUCC keeps recent Torn API responses for seconds to an hour (shared responses), so modules and tabs don't ask twice. Each module keeps its own cache and settings (see each module's own ToS for details).${IS_PDA ? ` In Torn PDA, saved data and your key are kept in the Torn page\'s storage inside the app (PDA has no separate script storage), so other scripts you add to PDA could read them.` : ''}</td></tr>
+      <tr><th>Data Storage</th><td>Only locally: in your userscript manager, plus this browser's storage for a few modules: Attack Hybrid Ultimate (button layout, key binds, attack type), Combat Desk (settings, sequences, button position), Cash Desk (your presets), Torn Spectrum (settings), OpenMarket (filter), Ranked Notes (notes), Item Pins (pins), TORN Auction Price Checker (settings, recent searches, window position) and OC Command Centre (join-audit history). Defib keeps your revive log (8 days) and your faction's incoming revive log (50 hours). Travel 2.Dough keeps 25 hours of price history and the pay from your last 60 hunts. OpenMarket keeps the item market listings your page loads in memory only, to label that page, and never saves them. TUCC keeps recent Torn API responses for seconds to an hour (shared responses), so modules and tabs don't ask twice. Each module keeps its own cache and settings (see each module's own ToS for details).${IS_PDA ? ` In Torn PDA, saved data and your key are kept in the Torn page\'s storage inside the app (PDA has no separate script storage), so other scripts you add to PDA could read them.` : ''}</td></tr>
       <tr><th>Data Sharing</th><td>Nobody. Your key and your Torn data are sent only to api.torn.com. Three modules read public data from community sites: Travel 2.Dough sends item IDs (nothing about you) to TornW3B for bazaar prices, OC Command Centre sends OC names and pass rates to tornprobability.com only if you turn on success chances, and TORN Auction Price Checker sends the item name, bonuses and quality you search for to its search service and TornW3B, only when you click.</td></tr>
       <tr><th>Purpose of Use</th><td>Competitive advantage: planning travel and hunting (Travel 2.Dough); attacking (Attack Hybrid Ultimate) and ranked war training (RW Energy Guard); ranked wars (War Room); training and daily progress (Torn Pulse); crimes (Crimes Analyst) and shoplifting alerts (Big Al's Watch); busting and bailing (Lockpick); reviving, revive clients and revive billing (Defib); item and stock prices (OpenMarket, Market Watcher, TORN Auction Price Checker). Public community tools: faction OC management (OC Command Centre), company management (Company Manager) and company recruiting (Recruiting Mastered). Other: accessibility colour layers (Torn Spectrum), personal award goals (Medal Detector), personal notes on ranked war items (Ranked Notes), organising your own Items page (Item Pins) and moving your own money (Cash Desk).</td></tr>
       <tr><th>Key Storage &amp; Sharing</th><td>Stored / Used only for automation, sent only to api.torn.com: in a request header on every API v2 call. API v1 takes the key in the address; v1 is used by Lockpick (bust log, level and perks), Torn Pulse (most calls), Medal Detector, Company Manager (company data) and Market Watcher (stock prices).${pdaKey() || IS_PDA ? ` In Torn PDA, the key saved in the app is used only if you press &quot;Use Torn PDA key&quot;.` : ''}</td></tr>

@@ -389,6 +389,60 @@
         return [...rows.values()];
     }
 
+    // ── Crime history (API v2 faction/{crimeId}/ochistory) ────────────────
+    // One crime's event log, boiled down to what the participation table shows. Torn marks this selection
+    // "Unstable", so anything unexpected is skipped, never guessed. Money only: item payouts are counted, not valued.
+    function summariseHistory(history) {
+        const out = { n: 0, left: [], kicked: [], paid: {}, paidItems: {}, jailed: [], hosp: [], injured: [] };
+        if (!Array.isArray(history)) return out;
+        const push = (list, id) => { if (!list.includes(id)) list.push(id); };
+        for (const e of history) {
+            if (!e || typeof e.action !== 'string') continue;
+            out.n++;
+            const id = validId(e.user?.id) ? Number(e.user.id) : null;
+            if (!id) continue;
+            if (e.action === 'Left') push(out.left, id);
+            else if (e.action === 'Kicked') push(out.kicked, id);
+            else if (e.action === 'Jailed') push(out.jailed, id);
+            else if (e.action === 'Hospitalized') push(out.hosp, id);
+            else if (e.action === 'Injured') push(out.injured, id);
+            else if (e.action === 'PayoutReceived') {
+                const m = Number(e.details?.money);
+                if (Number.isFinite(m) && m > 0) out.paid[id] = (out.paid[id] || 0) + m;
+                const items = Array.isArray(e.details?.items) ? e.details.items.reduce((n, i) => n + (Number(i?.quantity) > 0 ? Number(i.quantity) : 0), 0) : 0;
+                if (items) out.paidItems[id] = (out.paidItems[id] || 0) + items;
+            }
+        }
+        return out;
+    }
+    // Per-member totals over the report's crimes that have a saved history. Crimes with an empty history
+    // (Torn has none for older crimes) are counted as "no detail", not as zero.
+    function historyTotals(crimes, range, saved) {
+        const rows = new Map(); let withDetail = 0, empty = 0, missing = 0, total = 0;
+        const row = id => { if (!rows.has(id)) rows.set(id, { left: 0, kicked: 0, paid: 0, paidItems: 0, jailed: 0, hosp: 0, injured: 0 }); return rows.get(id); };
+        const seen = new Set();
+        for (const crime of crimes || []) {
+            if (!validId(crime?.id) || seen.has(Number(crime.id))) continue;
+            seen.add(Number(crime.id));
+            if (!COMPLETED_STATUSES.includes(String(crime.status).toLowerCase())) continue;
+            const when = stamp(crime.executed_at);
+            if (when == null || when < range.from || when > range.to) continue;
+            total++;
+            const h = saved ? saved[crime.id] : null;
+            if (!h) { missing++; continue; }
+            if (!h.n) { empty++; continue; }
+            withDetail++;
+            for (const id of h.left || []) row(id).left++;
+            for (const id of h.kicked || []) row(id).kicked++;
+            for (const id of h.jailed || []) row(id).jailed++;
+            for (const id of h.hosp || []) row(id).hosp++;
+            for (const id of h.injured || []) row(id).injured++;
+            for (const [id, m] of Object.entries(h.paid || {})) row(Number(id)).paid += Number(m) || 0;
+            for (const [id, n] of Object.entries(h.paidItems || {})) row(Number(id)).paidItems += Number(n) || 0;
+        }
+        return { rows, withDetail, empty, missing, total };
+    }
+
     // ── Live overview ─────────────────────────────────────────────────────
     function roleLabels(slots) {
         const base = slots.map((slot, i) => String(slot?.position_info?.label || slot?.position || 'Slot ' + (i + 1)));
@@ -704,7 +758,7 @@
     }
 
     const core = { dateRange, makeRecords, aggregate, participation, analyseLive, roleLabels, duration, cprRequirement, chanceInput, diffRules, cleanRules, rulesActive, encodeRules, decodeRules, findCodeInText, findBreaches,
-        unitPriceFromTT, csv, csvCell, fetchHistory, priceNumber };
+        unitPriceFromTT, csv, csvCell, fetchHistory, priceNumber, summariseHistory, historyTotals };
     if (typeof module !== 'undefined' && module.exports) { module.exports = core; return; }
 
     // ══ Runtime ═══════════════════════════════════════════════════════════
@@ -745,6 +799,7 @@
     let report = null, busy = false, controller = null, lastRequest = 0, detailPage = 0;
     let host, root, panel, launcher, cardHost, cardRoot;
     let sortBy = 'cost', sortDirection = -1, currentView = 'live', launcherPos = 'hidden';
+    let ocHist = {};   // saved crime histories: { crimeId: summary }, filled by Load details
     let partSort = { by: 'total', dir: -1 }, freeSort = { by: 'lastOC', dir: 1 }, stageFilter = 'all';
     let liveRaw = null, live = null, liveBusy = false, liveError = '', liveFetchedAt = 0;
     let scenarios = null, chancesBusy = false;
@@ -1043,6 +1098,38 @@
             message((signal.aborted ? 'Cancelled.' : safeError(error)) + (report ? ' Showing a clearly marked partial report.' : ''), true);
         } finally { controller = null; setBusy(false); updateCrimeFilter(); render(); }
     }
+    // Load details: your click starts it; one API call per crime that has no saved history yet, through the same
+    // paced, retrying apiRequest as everything else (about one call every 2 seconds). Cancel stops it. A finished
+    // crime never changes, so each history is saved once and not fetched again.
+    const HIST_KEEP = 800;
+    async function loadDetails() {
+        if (busy || !report) return;
+        const want = report.crimes.filter(c => validId(c?.id) && COMPLETED_STATUSES.includes(String(c.status).toLowerCase()) && !ocHist[c.id]);
+        if (!want.length) { renderParticipation(); return message('Details are already loaded for this report.'); }
+        controller = new AbortController(); const signal = controller.signal;
+        setBusy(true); let done = 0, failed = '';
+        try {
+            for (const crime of want) {
+                message('Loading crime details ' + (done + 1) + ' of ' + want.length + '…');
+                let data = null;
+                // 6 / 7 = Torn does not know this crime, or it is not your faction's: record "no detail" and carry on.
+                try { data = await apiRequest('faction/' + Number(crime.id) + '/ochistory', {}, signal); }
+                catch (error) { if (![6, 7].includes(Number(error?.code))) throw error; }
+                ocHist[crime.id] = { ...summariseHistory(data?.ochistory?.history), at: stamp(crime.executed_at) || 0 };
+                done++;
+                if (done % 10 === 0) { await saveHist(); renderParticipation(); }
+            }
+        } catch (error) { failed = signal.aborted ? 'Cancelled.' : safeError(error); }
+        finally {
+            controller = null; await saveHist(); setBusy(false); renderParticipation();
+            message(failed ? failed + ' Details loaded for ' + done + ' of ' + want.length + ' crimes.' : 'Details loaded for ' + done + ' crimes.', !!failed);
+        }
+    }
+    async function saveHist() {
+        const ids = Object.keys(ocHist);
+        if (ids.length > HIST_KEEP) ids.sort((a, b) => (ocHist[a].at || 0) - (ocHist[b].at || 0)).slice(0, ids.length - HIST_KEEP).forEach(id => { delete ocHist[id]; });
+        try { await save('oc_history', ocHist); } catch (_) {}
+    }
     // The crime filter applies to the Item costs and Activity tabs (and their CSVs);
     // the Overview always shows every crime in the period.
     function filtered(byCrime = true) {
@@ -1165,6 +1252,9 @@
     function participationRows() {
         if (!report) return [];
         const rows = participation(report.crimes, report.range, report.members);
+        const hist = historyTotals(report.crimes, report.range, ocHist);
+        for (const r of rows) { const h = hist.rows.get(r.id); r.left = h ? h.left : 0; r.kicked = h ? h.kicked : 0; r.paid = h ? h.paid : 0; r.paidItems = h ? h.paidItems : 0; r.jailed = h ? h.jailed : 0; r.hosp = h ? h.hosp : 0; r.injured = h ? h.injured : 0; }
+        rows.hist = hist;
         const { by, dir } = partSort;
         return rows.sort((a, b) => {
             const av = by === 'rate' ? (a.total ? a.success / a.total : -1) : a[by], bv = by === 'rate' ? (b.total ? b.success / b.total : -1) : b[by];
@@ -1182,6 +1272,12 @@
             th.querySelector('.sort-arrow').textContent = !active ? '↕' : partSort.dir === 1 ? '↑' : '↓';
         });
         $('#part-count').textContent = rows.length.toLocaleString('en-US') + ' members';
+        const hist = rows.hist, has = hist.withDetail > 0;
+        root.querySelectorAll('.hist-col').forEach(el => { el.hidden = !has; });
+        $('#part-details').hidden = !hist.total;
+        $('#part-details').textContent = hist.missing ? 'Load details' + (has || hist.empty ? ' (' + hist.missing + ' left)' : '') : 'Details loaded';
+        $('#part-details').disabled = busy || !hist.missing;
+        $('#part-hist-note').textContent = !hist.total || (!has && !hist.empty) ? '' : 'Left, kicked and paid cover ' + hist.withDetail + ' of ' + hist.total + ' crimes.' + (hist.empty ? ' Torn has no detail for ' + hist.empty + ' older ones.' : '');
         $('#part-body').innerHTML = rows.map(r => {
             const now = live?.inOC.get(r.id);
             const current = !r.current ? '<span class="muted">Left faction</span>' : !live ? '<span class="muted">Open Live to check</span>'
@@ -1189,8 +1285,9 @@
             return '<tr><td><a class="member-link" href="https://www.torn.com/profiles.php?XID=' + r.id + '" target="_blank" rel="noopener noreferrer">' + escape(r.name) + '</a><span class="secondary-cell">[' + r.id + ']</span></td>' +
                 '<td class="t-right value-strong">' + r.total + '</td><td class="t-right">' + r.success + '</td><td class="t-right">' + r.fail + '</td>' +
                 '<td class="t-right">' + (r.total ? Math.round(r.success * 100 / r.total) + '%' : '—') + '</td>' +
-                '<td>' + (r.last ? escape(timeText(r.last).replace(' TCT', '')) : '<span class="value-lost">None in period</span>') + '</td><td>' + current + '</td></tr>';
-        }).join('') || '<tr><td class="empty-row" colspan="7">No members found.</td></tr>';
+                '<td>' + (r.last ? escape(timeText(r.last).replace(' TCT', '')) : '<span class="value-lost">None in period</span>') + '</td><td>' + current + '</td>' +
+                (has ? '<td class="t-right">' + (r.left || '—') + '</td><td class="t-right">' + (r.kicked ? '<span class="value-lost">' + r.kicked + '</span>' : '—') + '</td><td class="t-right">' + (r.paid ? money(r.paid) : '—') + (r.paidItems ? '<span class="secondary-cell">+' + r.paidItems + ' item' + (r.paidItems === 1 ? '' : 's') + '</span>' : '') + '</td>' : '') + '</tr>';
+        }).join('') || '<tr><td class="empty-row" colspan="10">No members found.</td></tr>';
     }
 
     // ── Live rendering ────────────────────────────────────────────────────
@@ -2743,10 +2840,12 @@ button.occ-join-disabled{filter:grayscale(1);opacity:0.45;cursor:not-allowed !im
     function exportParticipation() {
         if (!report) return;
         const headers = ['Report completeness', 'Faction ID', 'Faction', 'Range from TCT', 'Range to TCT', 'Member XID', 'Member', 'Current member',
-            'Completed OCs', 'Successful', 'Failed', 'Success rate', 'Last OC TCT'];
-        downloadFile(csv([headers, ...participationRows().map(r => [report.complete ? 'Complete' : 'PARTIAL', report.faction.id, report.faction.name,
+            'Completed OCs', 'Successful', 'Failed', 'Success rate', 'Last OC TCT', 'Crimes with detail', 'Left an OC', 'Kicked from an OC', 'Paid ($)', 'Paid (items)', 'Jailed', 'Hospitalised', 'Injured'];
+        const rowsNow = participationRows(), detail = rowsNow.hist.withDetail;
+        downloadFile(csv([headers, ...rowsNow.map(r => [report.complete ? 'Complete' : 'PARTIAL', report.faction.id, report.faction.name,
             timeText(report.range.from), timeText(report.range.to), r.id, r.name, r.current ? 'Yes' : 'No', r.total, r.success, r.fail,
-            r.total ? Math.round(r.success * 100 / r.total) + '%' : '', r.last ? timeText(r.last) : ''])]), 'text/csv;charset=utf-8', 'participation.csv');
+            r.total ? Math.round(r.success * 100 / r.total) + '%' : '', r.last ? timeText(r.last) : '',
+            detail, detail ? r.left : '', detail ? r.kicked : '', detail ? Math.round(r.paid) : '', detail ? r.paidItems : '', detail ? r.jailed : '', detail ? r.hosp : '', detail ? r.injured : ''])]), 'text/csv;charset=utf-8', 'participation.csv');
     }
 
     function buildUI() {
@@ -2898,6 +2997,7 @@ a.btn { text-decoration:none; }
 .table-card { overflow:hidden; margin-bottom:12px; }
 .table-intro { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; padding:17px 19px; gap:10px; border-bottom:1px solid #303c4b; }
 .table-intro h2 { margin-bottom:5px; }
+.part-tools { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
 .table-intro p { margin:0; color:#8fa0b2; font-size:11px; }
 .table-scroll { max-height: min(56vh,590px); overflow:auto; scrollbar-width:thin; scrollbar-color:#4c596c transparent; }
 table { width:100%; border-collapse:separate; border-spacing:0; font-size:12px; font-variant-numeric: tabular-nums; }
@@ -3121,9 +3221,9 @@ tbody tr:last-child td { border-bottom:0; }
       <section class="info-card section-card"><h2>Explore the report</h2><p>See completed OCs per member, item-level quantities and costs, or the individual OC slots behind every loss and consumption event.</p><div class="inline-actions"><button class="btn btn-primary" data-jump="participation">View participation <span aria-hidden="true">→</span></button><button class="btn" data-jump="costs">View item costs</button><button class="btn" data-jump="activity">View activity log</button></div></section></div>
      <p id="price-note" class="note"></p></div>
    </section>
-   <section id="participation-view" data-view-panel="participation" hidden><div class="table-card section-card"><div class="table-intro"><div><h2>Member participation</h2><p>Completed OCs per member in the report period. Current OC comes from the live overview.</p></div><span class="section-tag" id="part-count">0 members</span></div><div class="table-scroll"><table aria-label="Member participation"><thead><tr>
-    <th class="sort-col" data-psort="name" aria-sort="none" tabindex="0">Member <span class="sort-arrow">↕</span></th><th class="sort-col t-right" data-psort="total" aria-sort="descending" tabindex="0">OCs <span class="sort-arrow">↓</span></th><th class="sort-col t-right" data-psort="success" aria-sort="none" tabindex="0">Successful <span class="sort-arrow">↕</span></th><th class="sort-col t-right" data-psort="fail" aria-sort="none" tabindex="0">Failed <span class="sort-arrow">↕</span></th><th class="sort-col t-right" data-psort="rate" aria-sort="none" tabindex="0">Success rate <span class="sort-arrow">↕</span></th><th class="sort-col" data-psort="last" aria-sort="none" tabindex="0">Last OC (TCT) <span class="sort-arrow">↕</span></th><th>Current OC</th>
-    </tr></thead><tbody id="part-body"></tbody></table></div><div class="table-foot">Members who left during the period are shown as former members.</div></div></section>
+   <section id="participation-view" data-view-panel="participation" hidden><div class="table-card section-card"><div class="table-intro"><div><h2>Member participation</h2><p>Completed OCs per member in the report period. Current OC comes from the live overview.</p></div><div class="part-tools"><button id="part-details" class="btn btn-outline" data-lock hidden title="One API call per crime, about one every 2 seconds. Saved once per crime.">Load details</button><span class="section-tag" id="part-count">0 members</span></div></div><div class="table-scroll"><table aria-label="Member participation"><thead><tr>
+    <th class="sort-col" data-psort="name" aria-sort="none" tabindex="0">Member <span class="sort-arrow">↕</span></th><th class="sort-col t-right" data-psort="total" aria-sort="descending" tabindex="0">OCs <span class="sort-arrow">↓</span></th><th class="sort-col t-right" data-psort="success" aria-sort="none" tabindex="0">Successful <span class="sort-arrow">↕</span></th><th class="sort-col t-right" data-psort="fail" aria-sort="none" tabindex="0">Failed <span class="sort-arrow">↕</span></th><th class="sort-col t-right" data-psort="rate" aria-sort="none" tabindex="0">Success rate <span class="sort-arrow">↕</span></th><th class="sort-col" data-psort="last" aria-sort="none" tabindex="0">Last OC (TCT) <span class="sort-arrow">↕</span></th><th>Current OC</th><th class="sort-col t-right hist-col" data-psort="left" aria-sort="none" tabindex="0" hidden>Left <span class="sort-arrow">↕</span></th><th class="sort-col t-right hist-col" data-psort="kicked" aria-sort="none" tabindex="0" hidden>Kicked <span class="sort-arrow">↕</span></th><th class="sort-col t-right hist-col" data-psort="paid" aria-sort="none" tabindex="0" hidden>Paid <span class="sort-arrow">↕</span></th>
+    </tr></thead><tbody id="part-body"></tbody></table></div><div class="table-foot"><span>Members who left during the period are shown as former members.</span><span id="part-hist-note"></span></div></div></section>
    <section id="costs-view" data-view-panel="costs" hidden><section class="info-card section-card costs-ownership"><h2>Ownership breakdown</h2><p>Lost and consumed items by recorded ownership, for the crimes shown below.</p><div id="costs-ownership"></div></section><div class="table-card section-card"><div class="table-intro"><div><h2>Item cost breakdown</h2><p>Sort any column to compare depleted items, prices and replacement cost.</p></div><span class="section-tag" id="item-count">0 item types</span></div><div class="table-scroll"><table aria-label="Item cost breakdown"><thead><tr>
     <th class="sort-col" data-sort="name" aria-sort="none" tabindex="0">Item <span class="sort-arrow">↕</span></th><th class="sort-col t-right" data-sort="lost" aria-sort="none" tabindex="0">Lost <span class="sort-arrow">↕</span></th><th class="sort-col t-right" data-sort="consumed" aria-sort="none" tabindex="0">Consumed <span class="sort-arrow">↕</span></th><th class="sort-col t-right" data-sort="price" aria-sort="none" tabindex="0">Unit value <span class="sort-arrow">↕</span></th><th class="sort-col t-right" data-sort="cost" aria-sort="descending" tabindex="0">Total cost <span class="sort-arrow">↓</span></th><th class="sort-col t-right" data-sort="factionCost" aria-sort="none" tabindex="0">Faction cost <span class="sort-arrow">↕</span></th><th class="sort-col t-right" data-sort="crimes" aria-sort="none" tabindex="0">OCs <span class="sort-arrow">↕</span></th>
     </tr></thead><tbody id="items"></tbody></table></div><div class="table-foot">Unit prices are current estimates, not historical purchase prices.</div></div></section>
@@ -3519,6 +3619,7 @@ tbody tr:last-child td { border-bottom:0; }
         $('#export-summary').addEventListener('click', exportSummary);
         $('#export-details').addEventListener('click', exportDetails);
         $('#export-participation').addEventListener('click', exportParticipation);
+        $('#part-details').addEventListener('click', e => { if (e.isTrusted) loadDetails(); });
 
         preset(30); $('#prefer-tt').checked = preferTT;
         $('#set-inactive').value = settings.inactiveHours;
@@ -3585,6 +3686,7 @@ tbody tr:last-child td { border-bottom:0; }
 
     async function init() {
         key = await read('key', ''); if (typeof key !== 'string') key = '';
+        ocHist = await read('oc_history', {}); if (!ocHist || typeof ocHist !== 'object' || Array.isArray(ocHist)) ocHist = {};
         memberKey = await read('member_key', ''); if (typeof memberKey !== 'string' || !/^[A-Za-z0-9]{16}$/.test(memberKey)) memberKey = '';
         catalog = await read('catalog', { at: 0, items: {} });
         if (!catalog || typeof catalog.items !== 'object' || !catalog.items || typeof catalog.at !== 'number') catalog = { at: 0, items: {} };

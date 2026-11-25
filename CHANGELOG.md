@@ -2,6 +2,26 @@
 
 All dates are 2026. Versions before 0.14.4 were private test builds.
 
+## 0.15.0-tablet · 25 November
+
+- **New module: Combat Desk** (attack pages, **off by default**). One floating button runs the fight: the first press starts it, each press after uses the right weapon for that turn, and the last press is your finish option. One press = one action; it never presses by itself.
+- **Plans from your own gear.** **Auto** reads your equipped weapons and their bonuses: temporary first, Assassinate on turn 1, Blindside while they are on full life, a debuff weapon (Weaken, Wither, Slow, Cripple, Eviscerate) for two hits, then your main weapon. Execute takes over once they drop below your weapon's own threshold. Rules for bonuses you don't carry never appear.
+- **1 Wpn** uses one weapon with optional temp-first, Assassinate-first and Execute. **Three sequences** let you set your own order (weapon, count, by hits or by uses).
+- **Modes** choose the finishing weapon and finish option: **War** (Warlord), **Mug** (Plunder, Mug), **Merc** (Stricken, Hosp), **Farm** (Revitalize or Proficience, Leave). The finisher comes in once they are below the life % you set (15% by default). War and Farm show only if you carry the weapon; a dashed Mug or Merc button means the bonus weapon isn't equipped and only the finish option changes.
+- **Perks and weapon stats (optional, needs a key).** With a Minimal key saved in TUCC, Combat Desk reads your perks and your equipped weapons' damage and accuracy from the Torn API when the attack page opens (two calls, cached). **Main: Best** then ranks your weapons by listed damage, Powerful or Specialist, your damage and accuracy perks for that weapon type, and hit chance. A fire damage perk raises a Burn weapon. Passive stat perks are read but don't change the choice, since they help every weapon equally. Without a key it uses your Primary.
+- Each weapon's perk boost is shown beside its bonuses, and the settings window lists the perks that were used. Perks it can't read are ignored.
+- Your weapons' bonuses and values are listed on the button's panel. The button can be dragged, locked, collapsed and set to the left or right.
+- While Combat Desk is on, **Attack Hybrid Ultimate steps aside** (shown as Paused), so the two never act on the same controls.
+- Makes no requests to torn.com. **Not yet tested on a live fight**: try it on a low-stakes target first.
+
+## 0.14.7-tablet · 25 November
+
+- **OC Command Centre: crime details in the participation report.** A new **Load details** button on the Participation tab reads each completed crime's history from Torn's new API selection (`faction/{crimeId}/ochistory`) and adds three columns per member: **Left** (crimes they left), **Kicked** (crimes they were kicked from) and **Paid** (money received; item payouts are counted, not valued).
+- It runs only when you press the button, makes one API call per crime (about one every 2 seconds) and can be cancelled. Each crime's history is saved once and never fetched again.
+- A note under the table says how many crimes the figures cover. Torn has no history for older crimes, and those are shown as "no detail", not as zero.
+- The participation CSV gains the same figures, plus jailed, hospitalised and injured counts.
+- Needs the same key as the existing reports (Limited with faction API access). Torn marks this selection "Unstable"; if its format changes, the extra columns simply stay hidden.
+
 ## 0.14.6-tablet · 24 November
 
 - **OC Command Centre:** added Torn's new level 4 scenario, **Earn Your Stripes**. It now appears in CPR settings under level 4. Its roles are read from your faction's open crimes, the same as other scenarios without a built-in role list.
