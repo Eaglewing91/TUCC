@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Torn Ultimate Command Centre [TUCC]
 // @namespace    eaglewing.torn.tucc
-// @version      0.15.0-tablet
+// @version      0.15.1-tablet
 // @description  One install for Eaglewing's Torn tools: Travel 2.Dough, Torn Pulse, Attack Hybrid Ultimate, Combat Desk, RW Energy Guard, OC Command Centre, Recruiting Mastered, OpenMarket (Enhanced), Torn Spectrum, Medal Detector, Lockpick, Cash Desk, Item Pins, Ranked Notes, plus War Room, Crimes Analyst, Company Manager, Market Watcher, Big Al's Watch and Defib. One API engine (shared budget, shared responses, pause on API errors, key in a header), one alerts centre and one TUCC page, opened from its own row in Torn's Areas list. Each module can be switched off.
 // @author       Eaglewing [571041]
 // @match        https://www.torn.com/*
@@ -108,7 +108,7 @@
 const TUCC = (() => {
   'use strict';
   const T_START = performance.now();                          // ms from the page starting to load until Tampermonkey ran TUCC
-  const VERSION = (typeof GM_info !== 'undefined' && GM_info.script && GM_info.script.version) || "0.15.0-tablet";
+  const VERSION = (typeof GM_info !== 'undefined' && GM_info.script && GM_info.script.version) || "0.15.1-tablet";
   const CORE = 'tucc_core:';
   const modules = [];
   const state = {}; // id -> { status, error, menus: [] }
@@ -1127,6 +1127,7 @@ const TUCC = (() => {
     #tucc-tablet .tt-h{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--tucc-muted);margin:2px 0 clamp(6px,1.1vh,10px)}
     #tucc-tablet .tt-sub{font-weight:500;letter-spacing:0;text-transform:none;color:var(--tucc-dim);margin-left:6px}
     #tucc-tablet .tt-app.tool .tt-ic{border-style:dashed}
+    #tucc-tablet .tt-app.off{opacity:.55}
     #tucc-tablet .tt-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(calc(var(--tt-ic) + 26px),1fr));gap:clamp(6px,1.3vh,14px) 8px;margin-bottom:clamp(8px,1.8vh,18px)}
     #tucc-tablet .tt-app{display:flex;flex-direction:column;align-items:center;gap:5px;background:none;border:0;color:var(--tucc-text);cursor:pointer;padding:4px;border-radius:14px;font:inherit}
     #tucc-tablet .tt-app:hover .tt-ic,#tucc-tablet .tt-app:focus-visible .tt-ic{transform:translateY(-2px);border-color:var(--tucc-accent)}
@@ -1169,7 +1170,7 @@ const TUCC = (() => {
   function tabletHome() {
     tabletApp = null;
     const scr = tabletEl.querySelector('.tt-main');
-    const on = modules.filter((m) => isEnabled(m));
+    const on = modules.filter((m) => isEnabled(m)), off = modules.filter((m) => !isEnabled(m));
     const app = (m) => `<button type="button" class="tt-app" data-app="${esc(m.id)}" title="${esc(m.name)}${m.launch && m.launch.hint ? ' · ' + esc(m.launch.hint) : ''}"><span class="tt-ic">${appIcon(m)}</span><span class="tt-nm">${esc(m.short || m.name)}</span></button>`;
     const sys = (a) => `<button type="button" class="tt-app sys" data-sys="${a.id}" title="${a.name}"><span class="tt-ic">${a.icon}${a.id === 'alerts' && unread() ? `<span class="tt-bd">${unread() > 9 ? '9+' : unread()}</span>` : ''}</span><span class="tt-nm">${a.name}</span></button>`;
     // Apps open their own window. Page tools work on one Torn page (the jail, the market…): tapping one shows what it does and a link to that page.
@@ -1179,6 +1180,7 @@ const TUCC = (() => {
       ${!on.length ? '<div class="tt-h">Apps</div><div class="tt-empty">No modules switched on. Open Settings to switch them on.</div>' : ''}
       ${wins.length ? `<div class="tt-h">Apps <span class="tt-sub">tap to open</span></div><div class="tt-grid">${wins.map(app).join('')}</div>` : ''}
       ${tools.length ? `<div class="tt-h">Page tools <span class="tt-sub">work on other Torn pages · tap for details and a link</span></div><div class="tt-grid">${tools.map((m) => app(m).replace('class="tt-app', 'class="tt-app tool')).join('')}</div>` : ''}
+      ${off.length ? `<div class="tt-h">Off <span class="tt-sub">switch on in Settings</span></div><div class="tt-grid">${off.map((m) => app(m).replace('class="tt-app', 'class="tt-app tool off')).join('')}</div>` : ''}
       <div class="tt-h">TUCC</div>
       <div class="tt-grid">${SYS_APPS.map(sys).join('')}</div></div>`;
     scr.querySelectorAll('[data-app]').forEach((b) => b.addEventListener('click', () => openModuleApp(modules.find((m) => m.id === b.dataset.app))));
@@ -22876,8 +22878,8 @@ if (w.wasOpen()) w.open();
 
 });
 
-/* ===================== MODULE: Combat Desk v0.2.0 (original script; TUCC changes listed in the build notes) ===================== */
-TUCC.register({"id": "combatdesk", "where": "attack pages", "inline": true, "defaultOn": false, "name": "Combat Desk", "short": "Combat Desk", "runAt": "end", "native": true, "desc": "Attack page: one button that starts the fight, uses the right weapon for the turn and presses your finish option. One press = one action. Plans are built from your own equipped weapons and their bonuses; War, Mug, Merc and Farm modes pick the finishing weapon. With a key it also reads your perks and equipped weapon stats (Torn API) and ranks your weapons by them. Off by default; while it is on, Attack Hybrid Ultimate steps aside. Makes no requests to torn.com.", "keyStore": "api_key", "keyLevel": "Optional: Minimal (perks and equipped weapon stats)", "version": "0.2.0", "matches": ["https://www.torn.com/page.php?sid=attack&user2ID=*", "https://www.torn.com/loader.php?sid=attack&user2ID=*"]}, function (GM_getValue, GM_setValue, GM_deleteValue, GM_listValues, GM_xmlhttpRequest, GM_addStyle, GM_registerMenuCommand, GM_notification, GM, GM_info, unsafeWindow, window, XMLHttpRequest, fetch, tucc, alert, confirm, prompt) {
+/* ===================== MODULE: Combat Desk v0.3.0 (original script; TUCC changes listed in the build notes) ===================== */
+TUCC.register({"id": "combatdesk", "where": "attack pages", "inline": true, "defaultOn": false, "name": "Combat Desk", "short": "Combat Desk", "runAt": "end", "native": true, "desc": "Attack page: one button that starts the fight, uses the right weapon for the turn and presses your finish option. One press = one action. Plans are built from your own equipped weapons and their bonuses; War, Mug, Merc and Farm modes pick the finishing weapon. With a key it also reads your perks and equipped weapon stats (Torn API) and ranks your weapons by them. Off by default; while it is on, Attack Hybrid Ultimate steps aside. Makes no requests to torn.com.", "keyStore": "api_key", "keyLevel": "Optional: Minimal (perks and equipped weapon stats)", "version": "0.3.0", "matches": ["https://www.torn.com/page.php?sid=attack&user2ID=*", "https://www.torn.com/loader.php?sid=attack&user2ID=*"]}, function (GM_getValue, GM_setValue, GM_deleteValue, GM_listValues, GM_xmlhttpRequest, GM_addStyle, GM_registerMenuCommand, GM_notification, GM, GM_info, unsafeWindow, window, XMLHttpRequest, fetch, tucc, alert, confirm, prompt) {
 
 /*
  * Compliance notes
@@ -22889,7 +22891,7 @@ TUCC.register({"id": "combatdesk", "where": "attack pages", "inline": true, "def
  * - Each real press of the Combat Desk button passes exactly ONE click to ONE of Torn's own controls on this page:
  *   Start fight, one of your weapons, or your finish option. Torn's page then sends its own normal request.
  *   Nothing is pressed on a timer, by an observer or on page load, and a press never leads to a second press.
- * - Synthetic (script-made) events are ignored: only trusted input counts.
+ * - Synthetic (script-made) events are ignored: only trusted input counts. A held key never repeats an action.
  * - Stores only your settings, sequences and the button position, locally.
  *
  * Terms of Service
@@ -22897,7 +22899,7 @@ TUCC.register({"id": "combatdesk", "where": "attack pages", "inline": true, "def
  *                          memory for the page only.
  *   Data Sharing:          Nobody.
  *   Purpose of Use:        Competitive advantage - faster, better-planned manual attacking.
- *   Key Storage & Sharing: Stored / Used only for automation (TUCC's shared key, sent only to api.torn.com).
+ *   Key Storage & Sharing: Stored locally in TUCC / sent only to api.torn.com.
  *   Key Access Level:      Optional. Minimal (perks need Public, equipped weapon stats need Minimal).
  */
 
@@ -22922,6 +22924,7 @@ const ALIAS = { demoralized: 'demoralize', poisoned: 'poison', laceration: 'lace
 const BONUS = Object.fromEntries(BONUS_NAMES.map((n) => [norm(n), n]));
 const bonusId = (title) => { const n = norm(title); const a = ALIAS[n] || n; return BONUS[a] ? a : null; };
 const DEBUFFS = ['weaken', 'wither', 'slow', 'cripple', 'eviscerate'];
+const DOTS = ['poison', 'bleed', 'burn', 'lacerate'];   // damage over time: one application is enough, they don't stack
 const MODES = {
   normal: { label: 'Normal', bonus: [] },
   war: { label: 'War', bonus: ['warlord'] },
@@ -22932,13 +22935,14 @@ const MODES = {
 
 /* ---------- settings ---------- */
 const DEF = {
-  mode: 'normal', sticky: true, plan: 'auto', main: 'best', fallback: 'secondary',
+  mode: 'normal', sticky: true, plan: 'smart', main: 'best', dock: 'fight', fallback: 'secondary',
   tempFirst: true, assFirst: true, execute: true, finish: 'leave', warFinish: 'leave', finishAt: 15,
   side: 'right', locked: false, open: true, pos: null,
   seqs: [{ name: 'Seq 1', steps: [] }, { name: 'Seq 2', steps: [] }, { name: 'Seq 3', steps: [] }],
 };
 const S = Object.assign({}, DEF, GM_getValue('settings', {}) || {});
 if (!Array.isArray(S.seqs) || S.seqs.length !== 3) S.seqs = JSON.parse(JSON.stringify(DEF.seqs));
+if (S.plan === 'auto') S.plan = 'smart';
 const save = () => GM_setValue('settings', S);
 
 /* ---------- reading the page ---------- */
@@ -22961,21 +22965,25 @@ function readWeapons() {
   for (const s of SLOTS) {
     const el = document.querySelector(s.sel);
     const usable = !!el && !/emptySlot/i.test(String(el.className || '')) && el.getAttribute('aria-disabled') !== 'true';
-    w[s.key] = { el, usable, name: el ? (el.getAttribute('aria-label') || '').replace(/^Attack with\s*/i, '').trim() : '', bonuses: el ? readBonuses(el) : [] };
+    const num = (q) => { const n = el && el.querySelector(q); const v = n ? parseFloat((n.textContent || '').replace(/,/g, '')) : NaN; return v > 0 ? v : null; };
+    const ammo = el ? ((el.querySelector('[class*="bottomMarker"]') || {}).textContent || '').trim() : '';
+    w[s.key] = { el, usable: usable && !/no ammo/i.test(ammo), ammo, damage: num('[id^="damage-value_attacker"]'), accuracy: num('span[id^="accuracy_attacker"], [id^="accuracy-value_attacker"]'),
+      name: el ? (el.getAttribute('aria-label') || '').replace(/^Attack with\s*/i, '').trim() : '', bonuses: el ? readBonuses(el) : [] };
   }
   return w;
 }
 const hp = (el) => { const m = /([\d,]+)\s*\/\s*([\d,]+)/.exec(el.textContent || ''); if (!m) return null; const cur = Number(m[1].replace(/,/g, '')), max = Number(m[2].replace(/,/g, '')); return max > 0 ? { cur, max } : null; };
 function readHealth() {
-  const els = Array.from(document.querySelectorAll('[id*="player-health-value"]'));
   let me = null, opp = null;
-  for (const el of els) {
-    const id = el.id || '';
-    const box = el.closest('[class*="player___"]');
-    const mine = /attacker/i.test(id) ? true : /defender/i.test(id) ? false : box ? !!box.querySelector('[aria-describedby*="label_attacker_"]') : null;
-    if (mine === true && !me) me = hp(el); else if (mine === false && !opp) opp = hp(el);
+  for (const box of document.querySelectorAll('#attack-root [class*="player___"], [class*="player___"]')) {
+    let v = null;
+    const sum = box.querySelector('[id$="-summary"]'), m = sum && /health\s+([\d,]+)\s+of\s+([\d,]+)/i.exec(sum.textContent || '');
+    if (m) { const cur = Number(m[1].replace(/,/g, '')), max = Number(m[2].replace(/,/g, '')); if (max > 0) v = { cur, max }; }
+    if (!v) { const ic = box.querySelector('[class*="iconHealth"]'); const sp = ic && ic.parentElement && ic.parentElement.querySelector('span'); if (sp) v = hp(sp); }
+    if (!v) { const old = box.querySelector('[id*="player-health-value"]'); if (old) v = hp(old); }
+    if (!v) continue;
+    if (box.querySelector('[aria-describedby*="label_attacker_"]')) { if (!me) me = v; } else if (!opp) opp = v;
   }
-  if (!me && !opp && els.length === 2) { me = hp(els[0]); opp = hp(els[1]); }
   return { me, opp };
 }
 function findStart() {
@@ -23022,13 +23030,17 @@ function perkPct(P, key, g, W) {
   if (!P) return 0;
   const t = typeKey(g && g.type);
   let p = P.all + (P.dmg[key] || 0) + (t && t !== key ? P.dmg[t] || 0 : 0);
-  if (P.fire && W && has(W[key], 'burn')) p += P.fire / 2;
+  if (P.fire && W && W[key] && (has(W[key], 'burn') || /molotov|flamethrower/i.test(W[key].name || ''))) p += P.fire / 2;
   return p;
 }
-// A ranking figure (not a damage prediction): listed damage x always-on bonuses x perks x hit chance at even speed and dexterity.
+// A ranking figure (not a damage prediction): listed damage x expected gain from always-on bonuses x perks x hit chance at
+// even speed and dexterity. Bonus weights are the average extra damage per turn: Powerful and Specialist at face value,
+// an extra hit for Fury and Double Tap, about four extra hits when Rage triggers, +500% when Deadly triggers,
+// Deadeye on roughly one hit in eight, and Penetrate at half its value (it depends on their armour).
+const GAIN = { powerful: 1, specialist: 1, fury: 1, doubletap: 1, rage: 4, deadly: 5, deadeye: 0.12, penetrate: 0.5 };
 function score(P, key, g, W) {
   if (!g || !(g.damage > 0)) return null;
-  const b = (W && W[key] ? W[key].bonuses : []).filter((x) => x.id === 'powerful' || x.id === 'specialist').reduce((a, x) => a + (x.value || 0), 0);
+  const b = (W && W[key] ? W[key].bonuses : []).reduce((a, x) => a + (x.value || 0) * (GAIN[x.id] || 0), 0);
   const t = typeKey(g.type), acc = Math.max(1, Math.min(100, (g.accuracy || 50) + (P ? P.accAll + (P.acc[key] || 0) + (t ? P.acc[t] || 0 : 0) : 0)));
   return g.damage * (1 + (b + perkPct(P, key, g, W)) / 100) * acc / 100;
 }
@@ -23048,13 +23060,18 @@ const finishWord = (s) => (s.mode === 'war' ? s.warFinish : (MODES[s.mode] || {}
 function buildPlan(W, s, I) {
   const main = s.main === 'best' ? bestMain(W, I, true) || bestMain(W, I) || 'primary' : s.main;
   if (/^seq[0-2]$/.test(s.plan)) return (s.seqs[Number(s.plan.slice(3))].steps || []).filter((x) => x && SLOT[x.w]).map((x) => ({ w: x.w, n: Number(x.n) || 0, by: x.by === 'use' ? 'use' : 'hit' }));
-  const steps = [], auto = s.plan === 'auto';
+  const steps = [], smart = s.plan === 'smart';
   const ass = withBonus(W, ['assassinate']);
-  if (ass && (auto || s.assFirst)) steps.push({ w: ass, n: 1, by: 'use', why: 'Assassinate' });
-  if (auto || s.tempFirst) steps.push({ w: 'temp', n: 1, by: 'use', why: 'Temp' });
-  if (auto) {
+  if (ass && (smart || s.assFirst)) steps.push({ w: ass, n: 1, by: 'use', why: 'Assassinate' });
+  if (smart || s.tempFirst) steps.push({ w: 'temp', n: 1, by: 'use', why: 'Temp' });
+  if (smart) {
     const bs = withBonus(W, ['blindside']);
     if (bs) steps.push({ w: bs, n: 0, by: 'full', why: 'Blindside' });
+    // A damage-over-time weapon once, until it lands (two tries at most). Left out when a mode's finishing weapon is equipped, since a tick could end the fight instead of that weapon.
+    if (!(s.mode !== 'normal' && withBonus(W, MODES[s.mode].bonus))) for (const k of ['primary', 'secondary', 'melee']) {
+      const d = W[k].bonuses.find((b) => DOTS.includes(b.id));
+      if (d && k !== main) steps.push({ w: k, n: 1, by: 'hit', max: 2, why: d.name });   // two tries at most
+    }
     for (const k of ['primary', 'secondary', 'melee']) {
       const d = W[k].bonuses.find((b) => DEBUFFS.includes(b.id));
       if (d && k !== main) steps.push({ w: k, n: 2, by: 'hit', why: d.name });
@@ -23080,7 +23097,7 @@ function choose(W, s, F, H, I) {
     if (!W[st.w] || !W[st.w].usable) continue;
     if (st.by === 'full') { if (H && H.opp ? H.opp.cur >= H.opp.max : uses < 1) return { key: st.w, why: st.why, step: i }; continue; }
     const count = st.by === 'hit' && F.hpOk ? hits : uses;
-    if (st.n > 0 && count >= st.n && !last) continue;
+    if (((st.n > 0 && count >= st.n) || (st.max && uses >= st.max)) && !last) continue;
     return { key: st.w, why: st.why || '', step: i };
   }
   const next = bestMain(W, I, true);
@@ -23102,7 +23119,7 @@ function advance(F, pick, H) {
   return n;
 }
 const newFight = () => ({ step: 0, stepUses: 0, stepHits: 0, hits: 0, turn: 0, last: null, lastStep: -1, lastOpp: null, hpOk: false });
-if (window.__TUCC_TEST) window.__tuccCombatDesk = { parsePerks, perkPct, score, rank, bestMain, typeKey, buildPlan, choose, settle, advance, newFight, bonusId, modeList, finishWord, DEF };
+if (window.__TUCC_TEST) window.__tuccCombatDesk = { readWeapons, readHealth, parsePerks, perkPct, score, rank, bestMain, typeKey, buildPlan, choose, settle, advance, newFight, bonusId, modeList, finishWord, DEF };
 
 /* ---------- the button ---------- */
 GM_addStyle(`#tucc-cd{position:fixed;z-index:2147481000;width:168px;font:600 12px/16px Arial,sans-serif;color:#eee;user-select:none;-webkit-user-select:none;touch-action:manipulation}
@@ -23118,6 +23135,12 @@ GM_addStyle(`#tucc-cd{position:fixed;z-index:2147481000;width:168px;font:600 12p
 #tucc-cd .cd-c.miss{border-style:dashed}
 #tucc-cd .cd-w{font:400 11px/15px Arial,sans-serif;color:#bbb;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #tucc-cd .cd-w b{color:#fff}
+#tucc-cd.dock{position:relative;z-index:5;width:auto;display:flex;gap:6px;align-items:stretch;margin:6px 0;left:auto !important;top:auto !important;right:auto !important;bottom:auto !important}
+#tucc-cd.dock .cd-main{flex:0 0 150px;width:150px;min-height:54px}
+#tucc-cd.dock .cd-pan{flex:1 1 auto;margin-top:0;display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center;min-width:0}
+#tucc-cd.dock .cd-row{margin:0;flex:0 0 auto}
+#tucc-cd.dock .cd-ws{flex:1 1 180px;min-width:0}
+#tucc-cd.dock .cd-grip{display:none}
 #tucc-cd .cd-grip{cursor:move}
 #tucc-cd.locked .cd-grip{display:none}
 #tucc-win-combatdesk select,#tucc-win-combatdesk input[type=text]{background:#222;color:#eee;border:1px solid #555;border-radius:4px;padding:2px 4px;font:12px Arial,sans-serif}
@@ -23139,10 +23162,16 @@ async function loadIntel() {
       if (!it || !it.stats || !(it.stats.damage > 0)) continue;
       const nm = String(it.name || '').toLowerCase();
       const key = SLOTS.map((s) => s.key).find((k) => W[k].name && W[k].name.toLowerCase() === nm) || bySlot[it.slot];
-      if (key && !INTEL.gear[key]) INTEL.gear[key] = { damage: it.stats.damage, accuracy: it.stats.accuracy, type: it.sub_type || '', ammo: it.ammo || null };
+      if (key && !INTEL.gear[key]) INTEL.gear[key] = { damage: it.stats.damage, accuracy: it.stats.accuracy, type: it.sub_type || '' };
     }
   } catch (e) { /* works without */ }
   lastHtml = ''; render();
+}
+// What the ranking sees: damage and accuracy as shown on your weapon slots (no key needed); the API adds the weapon type and your perks.
+function intel(W) {
+  const gear = {};
+  for (const s of SLOTS) { const g = INTEL.gear[s.key] || {}, w = W[s.key] || {}; if (w.damage || g.damage) gear[s.key] = { damage: w.damage || g.damage, accuracy: w.accuracy || g.accuracy, type: g.type || '' }; }
+  return { perks: INTEL.perks, gear };
 }
 let F = newFight(), startAt = 0, finishAt = 0, hitAt = 0, fightKey = '';
 const root = document.createElement('div'); root.id = 'tucc-cd';
@@ -23150,7 +23179,17 @@ root.innerHTML = '<button type="button" class="cd-main"></button><div class="cd-
 const mainBtn = root.firstChild, pan = root.lastChild;
 const w = tucc.ui.window('combatdesk', 'Combat Desk', '');
 
+// Docked: a strip directly under the two fighters, inside the attack screen. Put back if Torn redraws that area.
+function dock() {
+  const want = S.dock !== 'float';
+  root.classList.toggle('dock', want);
+  if (!want) { if (root.parentNode !== document.body) { document.body.appendChild(root); place(); } return; }
+  const host = document.querySelector('#attack-root [class*="playersModelWrap"]');
+  if (!host || !host.parentNode) { if (!root.isConnected) document.body.appendChild(root); root.classList.remove('dock'); return; }
+  if (root.previousElementSibling !== host) host.parentNode.insertBefore(root, host.nextSibling);
+}
 function place() {
+  if (root.classList.contains('dock')) return;
   const p = S.pos, W = window.innerWidth, H = window.innerHeight;
   if (p) { root.style.left = Math.max(0, Math.min(W - 60, p.x)) + 'px'; root.style.top = Math.max(0, Math.min(H - 60, p.y)) + 'px'; root.style.right = 'auto'; root.style.bottom = 'auto'; }
   else { root.style.top = 'auto'; root.style.bottom = '90px'; root.style.left = S.side === 'left' ? '10px' : 'auto'; root.style.right = S.side === 'left' ? 'auto' : '10px'; }
@@ -23179,26 +23218,29 @@ function act(e) {
   if (t - hitAt < 150) return;
   const W = readWeapons(), H = readHealth();
   F = settle(F, H);
-  const pick = choose(W, S, F, H, INTEL);
+  const pick = choose(W, S, F, H, intel(W));
   if (!pick || !W[pick.key].el) return;
   hitAt = t;
   F = advance(F, pick, H);
   W[pick.key].el.click();
 }
 mainBtn.addEventListener('click', act);
+// A held key repeats by itself, which would be several actions from one input: the button ignores key repeats.
+mainBtn.addEventListener('keydown', (e) => { if (e.repeat) { e.preventDefault(); e.stopPropagation(); } });
 
 function chip(act, val, text, on, extra) { return `<button type="button" class="cd-c${on ? ' on' : ''}${extra || ''}" data-act="${act}" data-val="${esc(val)}">${esc(text)}</button>`; }
 let lastHtml = '', lastMain = '';
 function render() {
   const key = location.search;
   if (key !== fightKey) { fightKey = key; F = newFight(); }
-  const W = readWeapons(), H = readHealth();
+  dock();
+  const W = readWeapons(), H = readHealth(), I = intel(W);
   const fin = findFinish(finishWord(S)), start = !fin && findStart();
   let big = '', small = '';
   if (fin) { big = fin === 'unknown' ? 'Finish' : (fin.textContent || '').trim(); small = MODES[S.mode].label; }
   else if (start) { big = 'Start'; small = MODES[S.mode].label; if (F.turn) F = newFight(); }
   else {
-    const pick = choose(W, S, settle(F, H), H, INTEL);
+    const pick = choose(W, S, settle(F, H), H, I);
     big = pick ? SLOT[pick.key].label : 'No weapon';
     small = pick ? pick.why : '';
   }
@@ -23209,11 +23251,11 @@ function render() {
     const modes = modeList(W);
     if (!modes.includes(S.mode)) S.mode = 'normal';
     h += '<div class="cd-row">' + modes.map((m) => chip('mode', m, MODES[m].label, S.mode === m, m !== 'normal' && !withBonus(W, MODES[m].bonus) ? ' miss' : '')).join('') + '</div>';
-    h += '<div class="cd-row">' + chip('plan', 'auto', 'Auto', S.plan === 'auto') + chip('plan', 'single', '1 Wpn', S.plan === 'single')
+    h += '<div class="cd-row">' + chip('plan', 'smart', 'Smart', S.plan === 'smart') + chip('plan', 'single', '1 Wpn', S.plan === 'single')
       + S.seqs.map((q, i) => (q.steps || []).length ? chip('plan', 'seq' + i, q.name || 'Seq ' + (i + 1), S.plan === 'seq' + i) : '').join('') + '</div>';
-    h += SLOTS.map((s) => { const pk = Math.round(perkPct(INTEL.perks, s.key, INTEL.gear[s.key], W)); const parts = W[s.key].bonuses.map((b) => esc(b.name) + (b.value != null ? ' ' + b.value + esc(b.unit) : '')); if (pk) parts.push('Perks +' + pk + '%'); return parts.length ? `<div class="cd-w"><b>${s.short}</b> ${parts.join(', ')}</div>` : ''; }).join('');
+    h += '<div class="cd-ws">' + SLOTS.map((s) => { const pk = Math.round(perkPct(I.perks, s.key, I.gear[s.key], W)); const parts = W[s.key].bonuses.map((b) => esc(b.name) + (b.value != null ? ' ' + b.value + esc(b.unit) : '')); if (pk) parts.push('Perks +' + pk + '%'); return parts.length ? `<div class="cd-w"><b>${s.short}</b> ${parts.join(', ')}</div>` : ''; }).join('') + '</div>';
   }
-  h += '<div class="cd-row">' + chip('open', '', S.open ? '▴' : '▾', false) + chip('lock', '', S.locked ? '🔒' : '🔓', S.locked) + chip('set', '', '⚙', false) + '<button type="button" class="cd-c cd-grip" data-act="grip">✥</button></div>';
+  h += '<div class="cd-row">' + chip('open', '', S.open ? '▴' : '▾', false) + (S.dock === 'float' ? chip('lock', '', S.locked ? '🔒' : '🔓', S.locked) : '') + chip('set', '', '⚙', false) + '<button type="button" class="cd-c cd-grip" data-act="grip">✥</button></div>';
   if (h !== lastHtml) { pan.innerHTML = h; lastHtml = h; }
 }
 pan.addEventListener('click', (e) => {
@@ -23246,6 +23288,7 @@ function drawSettings() {
     + `<span>Finish</span><select data-k="finish">${fo(S.finish)}</select>`
     + `<span>War finish</span><select data-k="warFinish">${fo(S.warFinish)}</select>`
     + `<span>Finisher at</span><select data-k="finishAt" data-num="1">${[5, 10, 15, 20, 25, 30].map((n) => opt(n, n + '% life', S.finishAt)).join('')}</select>`
+    + `<span>Position</span><select data-k="dock">${opt('fight', 'Under fight', S.dock)}${opt('float', 'Floating', S.dock)}</select>`
     + `<span>Side</span><select data-k="side">${opt('right', 'Right', S.side)}${opt('left', 'Left', S.side)}</select>`
     + '</div><div class="cd-g" style="grid-template-columns:1fr 1fr">'
     + sw('tempFirst', 'Temp first')
@@ -23282,13 +23325,15 @@ w.body.addEventListener('change', (e) => {
     }
   } else return;
   if (S.side && t.dataset.k === 'side') S.pos = null;
-  save(); place(); render();
+  save(); dock(); place(); render();
 });
 w.body.addEventListener('click', (e) => { if (e.target.closest('[data-act="resetpos"]')) { S.pos = null; save(); place(); } });
 
 /* ---------- start ---------- */
 (document.body || document.documentElement).appendChild(root);
-place(); render(); loadIntel();
+dock(); place(); render();
+// The API read waits until this tab is the one you are looking at (no calls from a hidden tab).
+if (!document.hidden) loadIntel(); else document.addEventListener('visibilitychange', function once() { if (document.hidden) return; document.removeEventListener('visibilitychange', once); loadIntel(); });
 let queued = false;
 new MutationObserver(() => { if (queued) return; queued = true; setTimeout(() => { queued = false; render(); }, 120); }).observe(document.body || document.documentElement, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ['class', 'aria-disabled', 'disabled'] });
 window.addEventListener('resize', place);

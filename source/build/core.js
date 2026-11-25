@@ -1037,6 +1037,7 @@ const TUCC = (() => {
     #tucc-tablet .tt-h{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--tucc-muted);margin:2px 0 clamp(6px,1.1vh,10px)}
     #tucc-tablet .tt-sub{font-weight:500;letter-spacing:0;text-transform:none;color:var(--tucc-dim);margin-left:6px}
     #tucc-tablet .tt-app.tool .tt-ic{border-style:dashed}
+    #tucc-tablet .tt-app.off{opacity:.55}
     #tucc-tablet .tt-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(calc(var(--tt-ic) + 26px),1fr));gap:clamp(6px,1.3vh,14px) 8px;margin-bottom:clamp(8px,1.8vh,18px)}
     #tucc-tablet .tt-app{display:flex;flex-direction:column;align-items:center;gap:5px;background:none;border:0;color:var(--tucc-text);cursor:pointer;padding:4px;border-radius:14px;font:inherit}
     #tucc-tablet .tt-app:hover .tt-ic,#tucc-tablet .tt-app:focus-visible .tt-ic{transform:translateY(-2px);border-color:var(--tucc-accent)}
@@ -1079,7 +1080,7 @@ const TUCC = (() => {
   function tabletHome() {
     tabletApp = null;
     const scr = tabletEl.querySelector('.tt-main');
-    const on = modules.filter((m) => isEnabled(m));
+    const on = modules.filter((m) => isEnabled(m)), off = modules.filter((m) => !isEnabled(m));
     const app = (m) => `<button type="button" class="tt-app" data-app="${esc(m.id)}" title="${esc(m.name)}${m.launch && m.launch.hint ? ' · ' + esc(m.launch.hint) : ''}"><span class="tt-ic">${appIcon(m)}</span><span class="tt-nm">${esc(m.short || m.name)}</span></button>`;
     const sys = (a) => `<button type="button" class="tt-app sys" data-sys="${a.id}" title="${a.name}"><span class="tt-ic">${a.icon}${a.id === 'alerts' && unread() ? `<span class="tt-bd">${unread() > 9 ? '9+' : unread()}</span>` : ''}</span><span class="tt-nm">${a.name}</span></button>`;
     // Apps open their own window. Page tools work on one Torn page (the jail, the market…): tapping one shows what it does and a link to that page.
@@ -1089,6 +1090,7 @@ const TUCC = (() => {
       ${!on.length ? '<div class="tt-h">Apps</div><div class="tt-empty">No modules switched on. Open Settings to switch them on.</div>' : ''}
       ${wins.length ? `<div class="tt-h">Apps <span class="tt-sub">tap to open</span></div><div class="tt-grid">${wins.map(app).join('')}</div>` : ''}
       ${tools.length ? `<div class="tt-h">Page tools <span class="tt-sub">work on other Torn pages · tap for details and a link</span></div><div class="tt-grid">${tools.map((m) => app(m).replace('class="tt-app', 'class="tt-app tool')).join('')}</div>` : ''}
+      ${off.length ? `<div class="tt-h">Off <span class="tt-sub">switch on in Settings</span></div><div class="tt-grid">${off.map((m) => app(m).replace('class="tt-app', 'class="tt-app tool off')).join('')}</div>` : ''}
       <div class="tt-h">TUCC</div>
       <div class="tt-grid">${SYS_APPS.map(sys).join('')}</div></div>`;
     scr.querySelectorAll('[data-app]').forEach((b) => b.addEventListener('click', () => openModuleApp(modules.find((m) => m.id === b.dataset.app))));

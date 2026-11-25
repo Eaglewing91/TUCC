@@ -2,10 +2,22 @@
 
 All dates are 2026. Versions before 0.14.4 were private test builds.
 
+## 0.15.1-tablet · 25 November
+
+- **Tablet: switched-off modules are now shown.** A new **Off** row lists them, so a new module that starts switched off (such as Combat Desk) is easy to find. Tapping one says how to switch it on.
+- **Combat Desk now sits inside the attack screen**, as a strip directly under the two fighters, so the button is next to the fight. Settings has a **Position** choice if you prefer it floating.
+- **Combat Desk reads the live attack page properly.** Both health values now come from Torn's own health line, so Execute, finishing weapons and hit counts work. Weapon damage, accuracy and ammo are read from your weapon slots, so **Best** ranks your weapons with no key at all. A weapon showing "No ammo" is skipped.
+- **Ranking counts more bonuses:** Fury, Double Tap, Rage, Deadly, Deadeye and Penetrate now add to a weapon's score by their average effect, alongside Powerful and Specialist.
+- **Damage-over-time weapons:** the Smart plan uses a Poison, Bleed, Burn or Lacerate weapon once, until it lands (two tries at most), before your main weapon. It is left out when a mode's finishing weapon is equipped.
+- **Fire damage perks** now also count for a Molotov Cocktail and Flamethrower.
+- The plan button is now labelled **Smart**.
+- **Combat Desk: a held key no longer repeats.** Holding Enter on the button gave several actions from one input; it now gives one.
+- **Combat Desk: no API read from a hidden tab.** The perks and weapon stats read waits until the attack tab is the one you are looking at.
+
 ## 0.15.0-tablet · 25 November
 
 - **New module: Combat Desk** (attack pages, **off by default**). One floating button runs the fight: the first press starts it, each press after uses the right weapon for that turn, and the last press is your finish option. One press = one action; it never presses by itself.
-- **Plans from your own gear.** **Auto** reads your equipped weapons and their bonuses: temporary first, Assassinate on turn 1, Blindside while they are on full life, a debuff weapon (Weaken, Wither, Slow, Cripple, Eviscerate) for two hits, then your main weapon. Execute takes over once they drop below your weapon's own threshold. Rules for bonuses you don't carry never appear.
+- **Plans from your own gear.** **Smart** reads your equipped weapons and their bonuses: temporary first, Assassinate on turn 1, Blindside while they are on full life, a debuff weapon (Weaken, Wither, Slow, Cripple, Eviscerate) for two hits, then your main weapon. Execute takes over once they drop below your weapon's own threshold. Rules for bonuses you don't carry never appear.
 - **1 Wpn** uses one weapon with optional temp-first, Assassinate-first and Execute. **Three sequences** let you set your own order (weapon, count, by hits or by uses).
 - **Modes** choose the finishing weapon and finish option: **War** (Warlord), **Mug** (Plunder, Mug), **Merc** (Stricken, Hosp), **Farm** (Revitalize or Proficience, Leave). The finisher comes in once they are below the life % you set (15% by default). War and Farm show only if you carry the weapon; a dashed Mug or Merc button means the bonus weapon isn't equipped and only the finish option changes.
 - **Perks and weapon stats (optional, needs a key).** With a Minimal key saved in TUCC, Combat Desk reads your perks and your equipped weapons' damage and accuracy from the Torn API when the attack page opens (two calls, cached). **Main: Best** then ranks your weapons by listed damage, Powerful or Specialist, your damage and accuracy perks for that weapon type, and hit chance. A fire damage perk raises a Burn weapon. Passive stat perks are read but don't change the choice, since they help every weapon equally. Without a key it uses your Primary.
