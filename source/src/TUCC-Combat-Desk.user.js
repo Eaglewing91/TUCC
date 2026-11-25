@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         TUCC Combat Desk
 // @namespace    eaglewing.torn.tucc.combatdesk
-// @version      0.4.1
+// @version      0.4.2
 // @description  Attack page: one button that starts the fight, uses the right weapon for the turn and presses your finish option. One press = one action. Plans come from your own equipped weapons, their bonuses and mods, your perks, the effects on both fighters and the opponent's armour; modes pick the finishing weapon (War, Mug, Merc, Farm). Makes no requests to torn.com.
 // @author       Eaglewing [571041]
 // @match        https://www.torn.com/page.php?sid=attack&user2ID=*
@@ -255,10 +255,10 @@ const tempBlocked = (W, A) => !!(A && W.temp && tempKind(W.temp.name) && A.block
 
 // A ranking figure (not a damage prediction): listed damage x expected gain from always-on bonuses, mods and perks x the
 // share that gets through their armour x hit chance at even speed and dexterity. Bonus weights are the average extra
-// damage per turn: Powerful and Specialist at face value, an extra hit for Fury and Double Tap, about four extra hits
-// when Rage triggers, +500% when Deadly triggers, Deadeye on roughly one hit in eight, half a hit's worth per point of
+// damage per turn: Powerful and Specialist at face value, an extra hit for Fury and Double Tap, two extra hits
+// when Rage triggers (a cautious figure: Torn doesn't publish how often it gives more), +500% when Deadly triggers, Deadeye on roughly one hit in eight, half a hit's worth per point of
 // critical hit rate (Expose, mods). Armour unknown: Penetrate counts at half its value and Puncture at a third.
-const GAIN = { powerful: 1, specialist: 1, fury: 1, doubletap: 1, rage: 4, deadly: 5, deadeye: 0.12, expose: 0.5 };
+const GAIN = { powerful: 1, specialist: 1, fury: 1, doubletap: 1, rage: 2, deadly: 5, deadeye: 0.12, expose: 0.5 };
 function score(P, key, g, W, A) {
   if (!g || !(g.damage > 0)) return null;
   const w = (W && W[key]) || {};
@@ -284,7 +284,16 @@ function rank(W, I) {
 // Is a weapon ready this turn? Out of ammo never is; an empty clip is a reload turn, skipped for Specialist (one clip only) or when Reload is off.
 const reloading = (w) => !!(w && w.ammo && w.ammo.clip === 0 && w.ammo.clips > 0);
 const ready = (W, k, s) => !!(W[k] && W[k].usable && !(reloading(W[k]) && (has(W[k], 'specialist') || (s && s.reload === false))));
-const bestMain = (W, I, s, usableOnly) => { const r = rank(W, I); const ks = Object.keys(r).filter((k) => r[k] != null && (!usableOnly || ready(W, k, s))); return ks.length ? ks.sort((a, b) => r[b] - r[a])[0] : null; };
+// The main weapon is a gun: Primary or Secondary. The ranking is an estimate, so a close call goes to the Primary; the
+// Secondary takes over only when it scores at least 15% higher. Melee is the main weapon only when no gun is ready
+// (no ammo, or none equipped). A melee weapon with a debuff or a mode's finishing bonus still gets its own turns in the plan.
+const EDGE = 1.15, GUNS = ['primary', 'secondary'];
+const bestMain = (W, I, s, usableOnly) => {
+  const r = rank(W, I), ok = (k) => r[k] != null && (!usableOnly || ready(W, k, s));
+  let best = null;
+  for (const k of GUNS) if (ok(k) && (best == null || r[k] > r[best] * EDGE)) best = k;
+  return best || (ok('melee') ? 'melee' : null);
+};
 // What one turn with a damage-over-time weapon is worth against a turn with the main weapon: its own hit plus the
 // effect's chance x total (only the share that lands in about ten turns, since ticks are strongest early).
 function dotWorth(W, I, key, main) {
@@ -385,17 +394,21 @@ function advance(F, pick, H) {
   return n;
 }
 const newFight = () => ({ step: 0, stepUses: 0, stepHits: 0, hits: 0, turn: 0, last: null, lastStep: -1, lastOpp: null, hpOk: false, fx: {} });
-// New action-log lines since the last look: was my last press a hit or a miss, and which effects were applied.
-function logNews(prev, cur, me, weaponName, names) {
+// New action-log lines since the last look. Torn's wording: "A missed B with his X", "A hit B with his X in the Stomach for 1218",
+// "A fired 1 round of his X hitting B in the Right leg for 1712", and an effect as its own line starting with the one affected: "B is eviscerated".
+function logNews(prev, cur, me, weaponName, names, opp) {
   const left = prev.slice(), fresh = [];
   for (const t of cur) { const i = left.indexOf(t); if (i >= 0) left.splice(i, 1); else fresh.push(t); }
   const L = { result: null, fx: {}, lines: fresh.length };
+  const m = String(me || '').toLowerCase(), o = String(opp || '').toLowerCase(), wn = String(weaponName || '').toLowerCase();
   for (const raw of fresh) {
     let t = raw.toLowerCase();
-    const mine = !!me && t.startsWith(me.toLowerCase());
-    if (mine && (!weaponName || t.includes(weaponName.toLowerCase()) || L.result == null)) { if (/\bmiss/.test(t)) { if (L.result == null) L.result = 'miss'; } else if (/\d/.test(t.replace(/\d{1,2}:\d{2}(:\d{2})?/g, ''))) L.result = 'hit'; }
+    if (m && t.startsWith(m) && (!wn || t.includes(wn))) { if (/\bmissed\b/.test(t)) { if (L.result == null) L.result = 'miss'; } else if (/\bfor\s+[\d,]+/.test(t)) L.result = 'hit'; }
     for (const nm of names || []) if (nm) t = t.split(nm.toLowerCase()).join(' ');     // a weapon called "Poison Umbrella" is not an effect
-    if (mine) for (const id in FX) if (FX[id].test(t)) L.fx[id] = (L.fx[id] || 0) + 1;
+    if (o ? t.startsWith(o) || (t.includes(o) && !(m && t.startsWith(m) && / is | was /.test(t.slice(m.length, m.length + 5)))) : !(m && t.startsWith(m))) {
+      const body = o && t.startsWith(o) ? t.slice(o.length) : t;
+      if (!o || t.startsWith(o) ? / is | was |^ is |^ was /.test(body) : /\b(?:is|was)\b/.test(t.slice(t.indexOf(o) + o.length))) for (const id in FX) if (FX[id].test(t)) L.fx[id] = (L.fx[id] || 0) + 1;
+    }
   }
   return L;
 }
@@ -539,7 +552,7 @@ function hideStart() {
 // Reads the action log once per look: the result of the last press and any effects applied.
 function news(W) {
   const cur = readLog(), p = players();
-  const L = logNews(logPrev, cur, nameOf(p.me), F.last && W[F.last] ? W[F.last].name : '', SLOTS.map((s) => W[s.key].name));
+  const L = logNews(logPrev, cur, nameOf(p.me), F.last && W[F.last] ? W[F.last].name : '', SLOTS.map((s) => W[s.key].name), nameOf(p.opp));
   return { L, cur };
 }
 

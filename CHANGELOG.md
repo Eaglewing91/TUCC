@@ -2,6 +2,13 @@
 
 All dates are 2026. Versions before 0.14.4 were private test builds.
 
+## 0.16.1-tablet · 25 November
+
+**Combat Desk**
+- **Best picks a gun.** The main weapon is your Primary, or your Secondary when it scores at least 15% higher. Melee becomes the main weapon only when no gun is ready. A melee weapon with a debuff (Slow, Weaken, Wither, Cripple, Eviscerate) or a mode's finishing bonus still gets its own turns in the plan.
+- **Rage counts for less.** It was valued as four extra hits when it triggers; it is now two, since Torn doesn't publish how often it gives more.
+- **Action log read with Torn's real wording.** A hit is a line ending "for" and a number; "recovered ... life" is no longer mistaken for a hit. An effect line is counted for whoever it names, so "you are eviscerated" is not treated as an effect on the opponent.
+
 ## 0.16.0-tablet · 25 November
 
 **Combat Desk**
