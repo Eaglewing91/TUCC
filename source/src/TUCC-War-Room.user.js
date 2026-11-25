@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         TUCC War Room
 // @namespace    eaglewing.torn.tucc.warroom
-// @version      1.1.0
+// @version      1.2.0
 // @description  Ranked war overview: enemy members by status with hospital timers, who is out next, both chains, and an optional chain-timeout alert. Names are plain links to attack pages that you click yourself. API only (Public key).
 // @author       Eaglewing [571041]
 // @match        https://www.torn.com/*
@@ -14,7 +14,10 @@
  * Compliance notes
  * - Reads only the Torn API (api.torn.com) through TUCC's shared engine. No clicks, submits or
  *   requests to torn.com; attack links are ordinary links you click (one click = one page load).
- * - Refreshes every 30s only while the window is open. Chain watch (off by default, your switch)
+ * - Refreshes only while the window is open and the tab is visible: every 30 seconds by default, or every 5 seconds or
+ *   every second if you choose that speed. At the faster speeds only the enemy member list is asked for each time (one API
+ *   call); the war and both chains stay on their slower schedule. A refresh is skipped while the last one is still waiting,
+ *   so calls never pile up. One second is 60 API calls a minute against Torn's limit of 100. Chain watch (off by default, your switch)
  *   checks your own faction's chain every 30s while a Torn tab is visible.
  * - Stores only settings (filter, chain watch, a typed enemy faction ID, the stats column switch and sort) locally.
  * - Optional "BSP stats" column (your switch, off by default, offered only if Battle Stats Predictor is set up in this
@@ -25,8 +28,8 @@
 
 if (typeof tucc === 'undefined' || !tucc) return;
 const { esc, fmt } = tucc;
-const S = { filter: GM_getValue('filter', 'all'), chainWatch: !!GM_getValue('chainWatch', false), enemyManual: GM_getValue('enemyManual', ''), bsp: !!GM_getValue('bsp', false), bspSort: GM_getValue('bspSort', '') };
-const save = () => { GM_setValue('filter', S.filter); GM_setValue('chainWatch', S.chainWatch); GM_setValue('enemyManual', S.enemyManual); GM_setValue('bsp', S.bsp); GM_setValue('bspSort', S.bspSort); };
+const S = { filter: GM_getValue('filter', 'all'), chainWatch: !!GM_getValue('chainWatch', false), enemyManual: GM_getValue('enemyManual', ''), bsp: !!GM_getValue('bsp', false), bspSort: GM_getValue('bspSort', ''), speed: [1, 5, 30].includes(Number(GM_getValue('speed', 30))) ? Number(GM_getValue('speed', 30)) : 30 };
+const save = () => { GM_setValue('filter', S.filter); GM_setValue('chainWatch', S.chainWatch); GM_setValue('enemyManual', S.enemyManual); GM_setValue('bsp', S.bsp); GM_setValue('bspSort', S.bspSort); GM_setValue('speed', S.speed); };
 
 /* ---------- predicted battle stats, from Battle Stats Predictor's own saved data on this device (read only) ---------- */
 const BSP = 'tdup.battleStatsPredictor.', BSP_LINK = 'https://www.torn.com/forums.php#/p=threads&f=67&t=16290324';
@@ -74,12 +77,19 @@ async function ownFaction() {
   return own;
 }
 
+let busy = false, lastSig = '', slowAt = 0;
+// The war and both chains keep their own slower schedule whatever the refresh speed; only the member list is asked for every time.
+const kept = {};
+const slow = (name, secs, fn) => { const k = kept[name]; if (k && Date.now() - k.at < secs * 1000) return Promise.resolve(k.v); return fn().then((v) => { kept[name] = { at: Date.now(), v }; return v; }); };
 async function load() {
+  if (busy) return;                      // the last refresh is still waiting its turn: don't stack another
+  busy = true;
+  const began = Date.now();
   try {
     const me = await ownFaction();
     let war = null, enemy = null;
     try {
-      const wj = await tucc.api(`/v2/faction/${me.id}/wars`, {}, { ttl: 60 });
+      const wj = await slow('wars', 55, () => tucc.api(`/v2/faction/${me.id}/wars`, {}, { ttl: 60 }));
       const r = wj && wj.wars && wj.wars.ranked;
       if (r && Array.isArray(r.factions) && !(r.end && r.end < nowS() && r.winner)) {
         war = r;
@@ -88,10 +98,10 @@ async function load() {
       }
     } catch (e) { if (e.code === 'nokey') throw e; }
     if (!enemy && /^\d+$/.test(String(S.enemyManual))) enemy = { id: Number(S.enemyManual), name: 'Faction ' + S.enemyManual, manual: true };
-    const jobs = [tucc.api(`/v2/faction/${me.id}/chain`, {}, { ttl: 20 }).catch(() => null)];
+    const jobs = [slow('chain:' + me.id, 25, () => tucc.api(`/v2/faction/${me.id}/chain`, {}, { ttl: 20 })).catch(() => null)];
     if (enemy) {
-      jobs.push(tucc.api(`/v2/faction/${enemy.id}/members`, {}, { ttl: 20 }).catch((e) => ({ __err: e })));
-      jobs.push(tucc.api(`/v2/faction/${enemy.id}/chain`, {}, { ttl: 20 }).catch(() => null));
+      jobs.push(tucc.api(`/v2/faction/${enemy.id}/members`, {}, { ttl: S.speed < 30 ? S.speed * 0.8 : 20 }).catch((e) => ({ __err: e })));
+      jobs.push(slow('chain:' + enemy.id, 25, () => tucc.api(`/v2/faction/${enemy.id}/chain`, {}, { ttl: 20 })).catch(() => null));
     }
     const [oc, mj, tc] = await Promise.all(jobs);
     data = { war, enemy, members: [], ourChain: oc && oc.chain, theirChain: tc && tc.chain, at: Date.now(), error: '' };
@@ -103,6 +113,13 @@ async function load() {
   } catch (e) {
     data = Object.assign({}, data, { error: e.code === 'nokey' ? 'Add a key in the API Keys app. A Public key is enough.' : e.message, at: Date.now() });
   }
+  busy = false;
+  // At the fast speeds a refresh that waited far longer than its interval means the shared API budget is full.
+  if (S.speed < 30 && Date.now() - began > Math.max(3000, S.speed * 3000)) slowAt = Date.now();
+  // Redraw only when something changed, so the list doesn't flicker or lose your place every second.
+  const d = data, sig = JSON.stringify([d.error, d.war && d.war.factions, d.enemy, d.ourChain, d.theirChain, d.members.map((m) => [m.id, m.name, m.level, m.status, m.last_action && m.last_action.status])]) + (slowAt && Date.now() - slowAt < 20000 ? 's' : '');
+  if (sig === lastSig && w.body.querySelector('table')) return;
+  lastSig = sig;
   render();
 }
 
@@ -170,6 +187,7 @@ function render() {
     const counts = { okay: 0, hospital: 0, travel: 0, jail: 0, online: 0 };
     ms.forEach((m) => { counts[group(m)] = (counts[group(m)] || 0) + 1; if (online(m) === 'online') counts.online++; });
     if (next.length) html += `<div class="card"><b style="font-size:12px">Out of hospital next</b><div class="row" style="margin-top:4px">${next.map((m) => `<span>${atk(m)} <span class="muted" data-until="${m.status.until}">${fmt.dur(m.status.until - nowS())}</span></span>`).join(' · ')}</div></div>`;
+    html += `<div class="row" style="margin-bottom:6px"><span class="muted">Refresh</span>${[[30, '30s'], [5, '5s'], [1, '1s']].map(([v, l]) => `<button type="button" class="b${S.speed === v ? ' pri' : ''}" data-speed="${v}" title="${v === 30 ? 'Lightest on the API' : v === 5 ? '12 API calls a minute' : '60 API calls a minute'}">${l}</button>`).join('')}${slowAt && Date.now() - slowAt < 20000 ? '<span class="warn">Slowed: API budget full</span>' : ''}</div>`;
     html += `<div class="row" style="margin-bottom:6px">${filters.map(([k, l]) => `<button type="button" class="b${S.filter === k ? ' pri' : ''}" data-filter="${k}">${l}${k === 'all' ? ` ${ms.length}` : counts[k] != null ? ` ${counts[k]}` : ''}</button>`).join('')}</div>`;
     let shown = sorted(ms).filter((m) => S.filter === 'all' || (S.filter === 'online' ? online(m) === 'online' : group(m) === S.filter));
     const here = bspHere(), col = here && S.bsp, mine = col ? myTotal() : 0, st = {};
@@ -179,12 +197,14 @@ function render() {
     }
     if (here) html += `<label class="row note" style="margin:0 0 6px"><input type="checkbox" data-bsp${S.bsp ? ' checked' : ''}> <a href="${BSP_LINK}" target="_blank" rel="noopener">BSP</a> stats</label>`;
     html += `<table><thead><tr><th></th><th>Name</th><th class="n">Lvl</th>${col ? `<th class="n"><a href="#" data-act="bspsort" title="Sort by stats">Stats${S.bspSort === 'up' ? ' ▴' : S.bspSort === 'down' ? ' ▾' : ''}</a></th>` : ''}<th>Status</th></tr></thead><tbody>${shown.map((m) => `<tr><td>${dot(m)}</td><td>${atk(m)}</td><td class="n">${fmt.num(m.level)}</td>${col ? `<td class="n">${statCell(st[m.id], mine)}</td>` : ''}<td>${pill(m)}</td></tr>`).join('') || `<tr><td colspan="${col ? 5 : 4}" class="muted">Nobody in this filter.</td></tr>`}</tbody></table>`;
-    html += `<div class="note">${esc(d.enemy.name)} [${d.enemy.id}]${d.enemy.manual ? ` · <a href="#" data-act="clear">stop watching</a>` : ''} · updated ${d.at ? fmt.ago(Math.floor(d.at / 1000)) : '–'} · refreshes every 30s while open. Names open the attack page when you click them.</div>`;
+    html += `<div class="note">${esc(d.enemy.name)} [${d.enemy.id}]${d.enemy.manual ? ` · <a href="#" data-act="clear">stop watching</a>` : ''} · updated <span data-ago>${d.at ? fmt.ago(Math.floor(d.at / 1000)) : '–'}</span> · refreshes every ${S.speed === 1 ? 'second' : S.speed + 's'} while open. Names open the attack page when you click them.</div>`;
   }
   w.set(html);
 }
 
 function onClick(e) {
+  const sp = e.target.closest('[data-speed]');
+  if (sp) { S.speed = Number(sp.dataset.speed); save(); lastSig = ''; slowAt = 0; render(); restart(); return; }
   const f = e.target.closest('[data-filter]');
   if (f) { S.filter = f.dataset.filter; save(); render(); return; }
   const a = e.target.closest('[data-act]');
@@ -205,12 +225,20 @@ function onChange(e) {
 setInterval(() => {
   if (!w.isOpen()) return;
   const n = nowS();
+  const ag = w.body.querySelector('[data-ago]'); if (ag && data.at) ag.textContent = fmt.ago(Math.floor(data.at / 1000));
   w.body.querySelectorAll('[data-until],[data-left]').forEach((el) => { const t = Number(el.dataset.until || el.dataset.left); el.textContent = t > n ? fmt.dur(t - n) : 'now'; });
 }, 1000);
 
-// refresh every 30s while open
+// refresh while open, at the speed you chose (30s, 5s or 1s)
 let poll = null;
-w.onopen = () => { render(); if (!poll) { const mine = {}; poll = tucc.every(30000, () => { if (w.isOpen() && poll === mine.h) load(); }); mine.h = poll; poll.now(); } else poll.now(); };
+function restart() {
+  if (poll) { poll.stop(); poll = null; }
+  if (!w.isOpen()) return;
+  const mine = {};
+  poll = tucc.every(S.speed * 1000, () => { if (w.isOpen() && poll === mine.h) load(); }); mine.h = poll;
+  poll.now();
+}
+w.onopen = () => { lastSig = ''; render(); if (!poll) restart(); else poll.now(); };
 w.onclose = () => { if (poll) { poll.stop(); poll = null; } };
 
 // chain watch (your switch): own chain only

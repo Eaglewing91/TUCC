@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Torn Ultimate Command Centre [TUCC]
 // @namespace    eaglewing.torn.tucc
-// @version      0.16.2-tablet
+// @version      0.16.3-tablet
 // @description  One install for Eaglewing's Torn tools: Travel 2.Dough, Torn Pulse, Attack Hybrid Ultimate, Combat Desk, RW Energy Guard, OC Command Centre, Recruiting Mastered, OpenMarket (Enhanced), Torn Spectrum, Medal Detector, Lockpick, Cash Desk, Item Pins, Ranked Notes, plus War Room, Crimes Analyst, Company Manager, Market Watcher, Big Al's Watch and Defib. One API engine (shared budget, shared responses, pause on API errors, key in a header), one alerts centre and one TUCC page, opened from its own row in Torn's Areas list. Each module can be switched off.
 // @author       Eaglewing [571041]
 // @match        https://www.torn.com/*
@@ -108,7 +108,7 @@
 const TUCC = (() => {
   'use strict';
   const T_START = performance.now();                          // ms from the page starting to load until Tampermonkey ran TUCC
-  const VERSION = (typeof GM_info !== 'undefined' && GM_info.script && GM_info.script.version) || "0.16.2-tablet";
+  const VERSION = (typeof GM_info !== 'undefined' && GM_info.script && GM_info.script.version) || "0.16.3-tablet";
   const CORE = 'tucc_core:';
   const modules = [];
   const state = {}; // id -> { status, error, menus: [] }
@@ -1440,7 +1440,7 @@ const TUCC = (() => {
   function tosHTML() {
     const ext = modules.filter((m) => m.tos && m.tos.external).map((m) => m.tos.external);   // trusted text from the build, contains links
     return `<table class="tos"><tbody>
-      <tr><th>Data Storage</th><td>Only locally: in your userscript manager, plus this browser's storage for a few modules: Attack Hybrid Ultimate (button layout, key binds, attack type), Combat Desk (settings, sequences, button position, and the weapons and armour last seen on up to 150 opponents you attacked), Cash Desk (your presets), Torn Spectrum (settings), OpenMarket (filter), Ranked Notes (notes), Item Pins (pins), TORN Auction Price Checker (settings, recent searches, window position) and OC Command Centre (join-audit history). Defib keeps your revive log (8 days) and your faction's incoming revive log (50 hours). Travel 2.Dough keeps 25 hours of price history and the pay from your last 60 hunts. OpenMarket keeps the item market listings your page loads in memory only, to label that page, and never saves them. TUCC keeps recent Torn API responses for seconds to an hour (shared responses), so modules and tabs don't ask twice. Each module keeps its own cache and settings (see each module's own ToS for details).${IS_PDA ? ` In Torn PDA, saved data and your key are kept in the Torn page\'s storage inside the app (PDA has no separate script storage), so other scripts you add to PDA could read them.` : ''}</td></tr>
+      <tr><th>Data Storage</th><td>Only locally: in your userscript manager, plus this browser's storage for a few modules: Attack Hybrid Ultimate (button layout, key binds, attack type), Combat Desk (settings, sequences, button position, the weapons and armour last seen on up to 150 opponents you attacked, and when your needles were injected), Cash Desk (your presets), Torn Spectrum (settings), OpenMarket (filter), Ranked Notes (notes), Item Pins (pins), TORN Auction Price Checker (settings, recent searches, window position) and OC Command Centre (join-audit history). Defib keeps your revive log (8 days) and your faction's incoming revive log (50 hours). Travel 2.Dough keeps 25 hours of price history and the pay from your last 60 hunts. OpenMarket keeps the item market listings your page loads in memory only, to label that page, and never saves them. TUCC keeps recent Torn API responses for seconds to an hour (shared responses), so modules and tabs don't ask twice. Each module keeps its own cache and settings (see each module's own ToS for details).${IS_PDA ? ` In Torn PDA, saved data and your key are kept in the Torn page\'s storage inside the app (PDA has no separate script storage), so other scripts you add to PDA could read them.` : ''}</td></tr>
       <tr><th>Data Sharing</th><td>Nobody. Your key and your Torn data are sent only to api.torn.com. Three modules read public data from community sites: Travel 2.Dough sends item IDs (nothing about you) to TornW3B for bazaar prices, OC Command Centre sends OC names and pass rates to tornprobability.com only if you turn on success chances, and TORN Auction Price Checker sends the item name, bonuses and quality you search for to its search service and TornW3B, only when you click.</td></tr>
       <tr><th>Purpose of Use</th><td>Competitive advantage: planning travel and hunting (Travel 2.Dough); attacking (Attack Hybrid Ultimate) and ranked war training (RW Energy Guard); ranked wars (War Room); training and daily progress (Torn Pulse); crimes (Crimes Analyst) and shoplifting alerts (Big Al's Watch); busting and bailing (Lockpick); reviving, revive clients and revive billing (Defib); item and stock prices (OpenMarket, Market Watcher, TORN Auction Price Checker). Public community tools: faction OC management (OC Command Centre), company management (Company Manager) and company recruiting (Recruiting Mastered). Other: accessibility colour layers (Torn Spectrum), personal award goals (Medal Detector), personal notes on ranked war items (Ranked Notes), organising your own Items page (Item Pins) and moving your own money (Cash Desk).</td></tr>
       <tr><th>Key Storage &amp; Sharing</th><td>Stored / Used only for automation, sent only to api.torn.com: in a request header on every API v2 call. API v1 takes the key in the address; v1 is used by Lockpick (bust log, level and perks), Torn Pulse (most calls), Medal Detector, Company Manager (company data) and Market Watcher (stock prices).${pdaKey() || IS_PDA ? ` In Torn PDA, the key saved in the app is used only if you press &quot;Use Torn PDA key&quot;.` : ''}</td></tr>
@@ -21358,14 +21358,17 @@ TUCC.register({"id": "pricecheck", "where": "ranked war items: auction house, It
 
 });
 
-/* ===================== MODULE: War Room v1.1.0 (original script; TUCC changes listed in the build notes) ===================== */
-TUCC.register({"id": "warroom", "where": "every page", "launch": {"menu": "Open War Room", "icon": "⚔", "hint": "Ranked war overview"}, "name": "War Room", "short": "War Room", "runAt": "idle", "native": true, "desc": "Ranked war overview: enemy members by status with hospital timers, who is out next, both chains, and a chain-timeout alert. Names link to attack pages; you click.", "keyStore": "api_key", "keyLevel": "Public", "version": "1.1.0", "matches": ["https://www.torn.com/*"]}, function (GM_getValue, GM_setValue, GM_deleteValue, GM_listValues, GM_xmlhttpRequest, GM_addStyle, GM_registerMenuCommand, GM_notification, GM, GM_info, unsafeWindow, window, XMLHttpRequest, fetch, tucc, alert, confirm, prompt) {
+/* ===================== MODULE: War Room v1.2.0 (original script; TUCC changes listed in the build notes) ===================== */
+TUCC.register({"id": "warroom", "where": "every page", "launch": {"menu": "Open War Room", "icon": "⚔", "hint": "Ranked war overview"}, "name": "War Room", "short": "War Room", "runAt": "idle", "native": true, "desc": "Ranked war overview: enemy members by status with hospital timers, who is out next, both chains, and a chain-timeout alert. Names link to attack pages; you click.", "keyStore": "api_key", "keyLevel": "Public", "version": "1.2.0", "matches": ["https://www.torn.com/*"]}, function (GM_getValue, GM_setValue, GM_deleteValue, GM_listValues, GM_xmlhttpRequest, GM_addStyle, GM_registerMenuCommand, GM_notification, GM, GM_info, unsafeWindow, window, XMLHttpRequest, fetch, tucc, alert, confirm, prompt) {
 
 /*
  * Compliance notes
  * - Reads only the Torn API (api.torn.com) through TUCC's shared engine. No clicks, submits or
  *   requests to torn.com; attack links are ordinary links you click (one click = one page load).
- * - Refreshes every 30s only while the window is open. Chain watch (off by default, your switch)
+ * - Refreshes only while the window is open and the tab is visible: every 30 seconds by default, or every 5 seconds or
+ *   every second if you choose that speed. At the faster speeds only the enemy member list is asked for each time (one API
+ *   call); the war and both chains stay on their slower schedule. A refresh is skipped while the last one is still waiting,
+ *   so calls never pile up. One second is 60 API calls a minute against Torn's limit of 100. Chain watch (off by default, your switch)
  *   checks your own faction's chain every 30s while a Torn tab is visible.
  * - Stores only settings (filter, chain watch, a typed enemy faction ID, the stats column switch and sort) locally.
  * - Optional "BSP stats" column (your switch, off by default, offered only if Battle Stats Predictor is set up in this
@@ -21376,8 +21379,8 @@ TUCC.register({"id": "warroom", "where": "every page", "launch": {"menu": "Open 
 
 if (typeof tucc === 'undefined' || !tucc) return;
 const { esc, fmt } = tucc;
-const S = { filter: GM_getValue('filter', 'all'), chainWatch: !!GM_getValue('chainWatch', false), enemyManual: GM_getValue('enemyManual', ''), bsp: !!GM_getValue('bsp', false), bspSort: GM_getValue('bspSort', '') };
-const save = () => { GM_setValue('filter', S.filter); GM_setValue('chainWatch', S.chainWatch); GM_setValue('enemyManual', S.enemyManual); GM_setValue('bsp', S.bsp); GM_setValue('bspSort', S.bspSort); };
+const S = { filter: GM_getValue('filter', 'all'), chainWatch: !!GM_getValue('chainWatch', false), enemyManual: GM_getValue('enemyManual', ''), bsp: !!GM_getValue('bsp', false), bspSort: GM_getValue('bspSort', ''), speed: [1, 5, 30].includes(Number(GM_getValue('speed', 30))) ? Number(GM_getValue('speed', 30)) : 30 };
+const save = () => { GM_setValue('filter', S.filter); GM_setValue('chainWatch', S.chainWatch); GM_setValue('enemyManual', S.enemyManual); GM_setValue('bsp', S.bsp); GM_setValue('bspSort', S.bspSort); GM_setValue('speed', S.speed); };
 
 /* ---------- predicted battle stats, from Battle Stats Predictor's own saved data on this device (read only) ---------- */
 const BSP = 'tdup.battleStatsPredictor.', BSP_LINK = 'https://www.torn.com/forums.php#/p=threads&f=67&t=16290324';
@@ -21425,12 +21428,19 @@ async function ownFaction() {
   return own;
 }
 
+let busy = false, lastSig = '', slowAt = 0;
+// The war and both chains keep their own slower schedule whatever the refresh speed; only the member list is asked for every time.
+const kept = {};
+const slow = (name, secs, fn) => { const k = kept[name]; if (k && Date.now() - k.at < secs * 1000) return Promise.resolve(k.v); return fn().then((v) => { kept[name] = { at: Date.now(), v }; return v; }); };
 async function load() {
+  if (busy) return;                      // the last refresh is still waiting its turn: don't stack another
+  busy = true;
+  const began = Date.now();
   try {
     const me = await ownFaction();
     let war = null, enemy = null;
     try {
-      const wj = await tucc.api(`/v2/faction/${me.id}/wars`, {}, { ttl: 60 });
+      const wj = await slow('wars', 55, () => tucc.api(`/v2/faction/${me.id}/wars`, {}, { ttl: 60 }));
       const r = wj && wj.wars && wj.wars.ranked;
       if (r && Array.isArray(r.factions) && !(r.end && r.end < nowS() && r.winner)) {
         war = r;
@@ -21439,10 +21449,10 @@ async function load() {
       }
     } catch (e) { if (e.code === 'nokey') throw e; }
     if (!enemy && /^\d+$/.test(String(S.enemyManual))) enemy = { id: Number(S.enemyManual), name: 'Faction ' + S.enemyManual, manual: true };
-    const jobs = [tucc.api(`/v2/faction/${me.id}/chain`, {}, { ttl: 20 }).catch(() => null)];
+    const jobs = [slow('chain:' + me.id, 25, () => tucc.api(`/v2/faction/${me.id}/chain`, {}, { ttl: 20 })).catch(() => null)];
     if (enemy) {
-      jobs.push(tucc.api(`/v2/faction/${enemy.id}/members`, {}, { ttl: 20 }).catch((e) => ({ __err: e })));
-      jobs.push(tucc.api(`/v2/faction/${enemy.id}/chain`, {}, { ttl: 20 }).catch(() => null));
+      jobs.push(tucc.api(`/v2/faction/${enemy.id}/members`, {}, { ttl: S.speed < 30 ? S.speed * 0.8 : 20 }).catch((e) => ({ __err: e })));
+      jobs.push(slow('chain:' + enemy.id, 25, () => tucc.api(`/v2/faction/${enemy.id}/chain`, {}, { ttl: 20 })).catch(() => null));
     }
     const [oc, mj, tc] = await Promise.all(jobs);
     data = { war, enemy, members: [], ourChain: oc && oc.chain, theirChain: tc && tc.chain, at: Date.now(), error: '' };
@@ -21454,6 +21464,13 @@ async function load() {
   } catch (e) {
     data = Object.assign({}, data, { error: e.code === 'nokey' ? 'Add a key in the API Keys app. A Public key is enough.' : e.message, at: Date.now() });
   }
+  busy = false;
+  // At the fast speeds a refresh that waited far longer than its interval means the shared API budget is full.
+  if (S.speed < 30 && Date.now() - began > Math.max(3000, S.speed * 3000)) slowAt = Date.now();
+  // Redraw only when something changed, so the list doesn't flicker or lose your place every second.
+  const d = data, sig = JSON.stringify([d.error, d.war && d.war.factions, d.enemy, d.ourChain, d.theirChain, d.members.map((m) => [m.id, m.name, m.level, m.status, m.last_action && m.last_action.status])]) + (slowAt && Date.now() - slowAt < 20000 ? 's' : '');
+  if (sig === lastSig && w.body.querySelector('table')) return;
+  lastSig = sig;
   render();
 }
 
@@ -21521,6 +21538,7 @@ function render() {
     const counts = { okay: 0, hospital: 0, travel: 0, jail: 0, online: 0 };
     ms.forEach((m) => { counts[group(m)] = (counts[group(m)] || 0) + 1; if (online(m) === 'online') counts.online++; });
     if (next.length) html += `<div class="card"><b style="font-size:12px">Out of hospital next</b><div class="row" style="margin-top:4px">${next.map((m) => `<span>${atk(m)} <span class="muted" data-until="${m.status.until}">${fmt.dur(m.status.until - nowS())}</span></span>`).join(' · ')}</div></div>`;
+    html += `<div class="row" style="margin-bottom:6px"><span class="muted">Refresh</span>${[[30, '30s'], [5, '5s'], [1, '1s']].map(([v, l]) => `<button type="button" class="b${S.speed === v ? ' pri' : ''}" data-speed="${v}" title="${v === 30 ? 'Lightest on the API' : v === 5 ? '12 API calls a minute' : '60 API calls a minute'}">${l}</button>`).join('')}${slowAt && Date.now() - slowAt < 20000 ? '<span class="warn">Slowed: API budget full</span>' : ''}</div>`;
     html += `<div class="row" style="margin-bottom:6px">${filters.map(([k, l]) => `<button type="button" class="b${S.filter === k ? ' pri' : ''}" data-filter="${k}">${l}${k === 'all' ? ` ${ms.length}` : counts[k] != null ? ` ${counts[k]}` : ''}</button>`).join('')}</div>`;
     let shown = sorted(ms).filter((m) => S.filter === 'all' || (S.filter === 'online' ? online(m) === 'online' : group(m) === S.filter));
     const here = bspHere(), col = here && S.bsp, mine = col ? myTotal() : 0, st = {};
@@ -21530,12 +21548,14 @@ function render() {
     }
     if (here) html += `<label class="row note" style="margin:0 0 6px"><input type="checkbox" data-bsp${S.bsp ? ' checked' : ''}> <a href="${BSP_LINK}" target="_blank" rel="noopener">BSP</a> stats</label>`;
     html += `<table><thead><tr><th></th><th>Name</th><th class="n">Lvl</th>${col ? `<th class="n"><a href="#" data-act="bspsort" title="Sort by stats">Stats${S.bspSort === 'up' ? ' ▴' : S.bspSort === 'down' ? ' ▾' : ''}</a></th>` : ''}<th>Status</th></tr></thead><tbody>${shown.map((m) => `<tr><td>${dot(m)}</td><td>${atk(m)}</td><td class="n">${fmt.num(m.level)}</td>${col ? `<td class="n">${statCell(st[m.id], mine)}</td>` : ''}<td>${pill(m)}</td></tr>`).join('') || `<tr><td colspan="${col ? 5 : 4}" class="muted">Nobody in this filter.</td></tr>`}</tbody></table>`;
-    html += `<div class="note">${esc(d.enemy.name)} [${d.enemy.id}]${d.enemy.manual ? ` · <a href="#" data-act="clear">stop watching</a>` : ''} · updated ${d.at ? fmt.ago(Math.floor(d.at / 1000)) : '–'} · refreshes every 30s while open. Names open the attack page when you click them.</div>`;
+    html += `<div class="note">${esc(d.enemy.name)} [${d.enemy.id}]${d.enemy.manual ? ` · <a href="#" data-act="clear">stop watching</a>` : ''} · updated <span data-ago>${d.at ? fmt.ago(Math.floor(d.at / 1000)) : '–'}</span> · refreshes every ${S.speed === 1 ? 'second' : S.speed + 's'} while open. Names open the attack page when you click them.</div>`;
   }
   w.set(html);
 }
 
 function onClick(e) {
+  const sp = e.target.closest('[data-speed]');
+  if (sp) { S.speed = Number(sp.dataset.speed); save(); lastSig = ''; slowAt = 0; render(); restart(); return; }
   const f = e.target.closest('[data-filter]');
   if (f) { S.filter = f.dataset.filter; save(); render(); return; }
   const a = e.target.closest('[data-act]');
@@ -21556,12 +21576,20 @@ function onChange(e) {
 setInterval(() => {
   if (!w.isOpen()) return;
   const n = nowS();
+  const ag = w.body.querySelector('[data-ago]'); if (ag && data.at) ag.textContent = fmt.ago(Math.floor(data.at / 1000));
   w.body.querySelectorAll('[data-until],[data-left]').forEach((el) => { const t = Number(el.dataset.until || el.dataset.left); el.textContent = t > n ? fmt.dur(t - n) : 'now'; });
 }, 1000);
 
-// refresh every 30s while open
+// refresh while open, at the speed you chose (30s, 5s or 1s)
 let poll = null;
-w.onopen = () => { render(); if (!poll) { const mine = {}; poll = tucc.every(30000, () => { if (w.isOpen() && poll === mine.h) load(); }); mine.h = poll; poll.now(); } else poll.now(); };
+function restart() {
+  if (poll) { poll.stop(); poll = null; }
+  if (!w.isOpen()) return;
+  const mine = {};
+  poll = tucc.every(S.speed * 1000, () => { if (w.isOpen() && poll === mine.h) load(); }); mine.h = poll;
+  poll.now();
+}
+w.onopen = () => { lastSig = ''; render(); if (!poll) restart(); else poll.now(); };
 w.onclose = () => { if (poll) { poll.stop(); poll = null; } };
 
 // chain watch (your switch): own chain only
@@ -23002,8 +23030,8 @@ if (w.wasOpen()) w.open();
 
 });
 
-/* ===================== MODULE: Combat Desk v0.4.2 (original script; TUCC changes listed in the build notes) ===================== */
-TUCC.register({"id": "combatdesk", "where": "attack pages", "inline": true, "defaultOn": false, "name": "Combat Desk", "short": "Combat Desk", "runAt": "end", "native": true, "desc": "Attack page: one button that starts the fight, uses the right weapon for the turn and presses your finish option. One press = one action. Plans are built from your own equipped weapons, their bonuses and mods, the effects on both fighters, the action log and the opponent's armour; needles go first; War, Mug, Merc and Farm modes pick the finishing weapon. With a key it also reads your perks and weapon types and names armour pieces (Torn API). Off by default; while it is on, Attack Hybrid Ultimate steps aside. Makes no requests to torn.com.", "keyStore": "api_key", "keyLevel": "Optional: Minimal (perks and equipped weapon stats)", "version": "0.4.2", "matches": ["https://www.torn.com/page.php?sid=attack&user2ID=*", "https://www.torn.com/loader.php?sid=attack&user2ID=*"]}, function (GM_getValue, GM_setValue, GM_deleteValue, GM_listValues, GM_xmlhttpRequest, GM_addStyle, GM_registerMenuCommand, GM_notification, GM, GM_info, unsafeWindow, window, XMLHttpRequest, fetch, tucc, alert, confirm, prompt) {
+/* ===================== MODULE: Combat Desk v0.5.0 (original script; TUCC changes listed in the build notes) ===================== */
+TUCC.register({"id": "combatdesk", "where": "attack pages", "inline": true, "defaultOn": false, "name": "Combat Desk", "short": "Combat Desk", "runAt": "end", "native": true, "desc": "Attack page: one button that starts the fight, uses the right weapon for the turn and presses your finish option. One press = one action. Plans are built from your own equipped weapons, their bonuses and mods, the effects on both fighters, the action log and the opponent's armour; needles go first; War Farm, War Push, Mug, Merc and Farm modes pick the finishing weapon and finish option; needles active on you are shown with their time left. With a key it also reads your perks and weapon types and names armour pieces (Torn API). Off by default; while it is on, Attack Hybrid Ultimate steps aside. Makes no requests to torn.com.", "keyStore": "api_key", "keyLevel": "Optional: Minimal (perks and equipped weapon stats)", "version": "0.5.0", "matches": ["https://www.torn.com/page.php?sid=attack&user2ID=*", "https://www.torn.com/loader.php?sid=attack&user2ID=*"]}, function (GM_getValue, GM_setValue, GM_deleteValue, GM_listValues, GM_xmlhttpRequest, GM_addStyle, GM_registerMenuCommand, GM_notification, GM, GM_info, unsafeWindow, window, XMLHttpRequest, fetch, tucc, alert, confirm, prompt) {
 
 /*
  * Compliance notes
@@ -23057,10 +23085,12 @@ const DOT_DEF = { poison: [950, 19], lacerate: [400, 9], bleed: [200, 9], burn: 
 // How each effect shows up in icon names and log lines (word stems).
 const FX = { poison: /poison/, bleed: /bleed/, burn: /burn/, lacerate: /lacerat/, weaken: /weaken/, wither: /wither/, slow: /slow/, cripple: /crippl/, eviscerate: /eviscerat/ };
 const NEEDLES = { epinephrine: 'Epinephrine', melatonin: 'Melatonin', serotonin: 'Serotonin', tyrosine: 'Tyrosine' };
+const NEEDLES_SHORT = { epinephrine: 'Epi', melatonin: 'Mel', serotonin: 'Ser', tyrosine: 'Tyr' };
 const needleOf = (name) => Object.keys(NEEDLES).find((k) => new RegExp(k, 'i').test(name || '')) || null;
 const MODES = {
   normal: { label: 'Normal', bonus: [] },
-  war: { label: 'War', bonus: ['warlord'] },
+  warfarm: { label: 'War Farm', bonus: ['warlord'], finish: 'leave' },
+  warpush: { label: 'War Push', bonus: ['warlord'], finish: 'hosp' },
   mug: { label: 'Mug', bonus: ['plunder'], finish: 'mug' },
   merc: { label: 'Merc', bonus: ['stricken'], finish: 'hosp' },
   farm: { label: 'Farm', bonus: ['revitalize', 'proficience'], finish: 'leave' },
@@ -23076,6 +23106,7 @@ const DEF = {
 const S = Object.assign({}, DEF, GM_getValue('settings', {}) || {});
 if (!Array.isArray(S.seqs) || S.seqs.length !== 3) S.seqs = JSON.parse(JSON.stringify(DEF.seqs));
 if (S.plan === 'auto') S.plan = 'smart';
+if (S.mode === 'war') S.mode = S.warFinish === 'hosp' ? 'warpush' : 'warfarm';
 const save = () => GM_setValue('settings', S);
 
 /* ---------- reading the page ---------- */
@@ -23304,19 +23335,21 @@ function dotWorth(W, I, key, main) {
 
 /* ---------- the plan (pure: no page access, so it can be tested on its own) ---------- */
 const withBonus = (W, ids, usableOnly) => SLOTS.map((s) => s.key).find((k) => (!usableOnly || W[k].usable) && ids.some((id) => has(W[k], id))) || null;
-const modeList = (W) => Object.keys(MODES).filter((m) => m === 'normal' || m === 'mug' || m === 'merc' || withBonus(W, MODES[m].bonus));
-const finishWord = (s) => (s.mode === 'war' ? s.warFinish : (MODES[s.mode] || {}).finish || s.finish) || 'leave';
+const modeList = (W) => Object.keys(MODES).filter((m) => m !== 'farm' || withBonus(W, MODES[m].bonus));
+const finishWord = (s) => (MODES[s.mode] || {}).finish || s.finish || 'leave';
 
 function buildPlan(W, s, I) {
-  const A = I && I.armour;
+  const A = I && I.armour, live = (I && I.needles) || {};
   const main = s.main === 'best' ? bestMain(W, I, s, true) || bestMain(W, I, s) || 'primary' : s.main;
   if (/^seq[0-2]$/.test(s.plan)) return (s.seqs[Number(s.plan.slice(3))].steps || []).filter((x) => x && SLOT[x.w]).map((x) => ({ w: x.w, n: Number(x.n) || 0, by: x.by === 'use' ? 'use' : 'hit' }));
   const steps = [], smart = s.plan === 'smart';
-  const needle = W.temp && W.temp.needle, ass = withBonus(W, ['assassinate']);
+  let needle = W.temp && W.temp.needle; const ass = withBonus(W, ['assassinate']);
+  const held = needle && live[needle] > 0;                 // that needle is still active on you: keep it for later
+  if (held) needle = null;
   // A needle (Epinephrine, Melatonin, Serotonin, Tyrosine) always goes first: it lifts every hit after it.
   if (needle && (smart || s.tempFirst)) steps.push({ w: 'temp', n: 1, by: 'use', why: NEEDLES[needle] });
   if (ass && !needle && (smart || s.assFirst)) steps.push({ w: ass, n: 1, by: 'use', why: 'Assassinate' });
-  if (!needle && (smart || s.tempFirst) && !(smart && tempBlocked(W, A))) steps.push({ w: 'temp', n: 1, by: 'use', why: 'Temp' });
+  if (!needle && !held && (smart || s.tempFirst) && !(smart && tempBlocked(W, A))) steps.push({ w: 'temp', n: 1, by: 'use', why: 'Temp' });
   if (smart) {
     const bs = withBonus(W, ['blindside']);
     if (bs) steps.push({ w: bs, n: 0, by: 'full', why: 'Blindside' });
@@ -23388,15 +23421,30 @@ function advance(F, pick, H) {
   return n;
 }
 const newFight = () => ({ step: 0, stepUses: 0, stepHits: 0, hits: 0, turn: 0, last: null, lastStep: -1, lastOpp: null, hpOk: false, fx: {} });
+// A log line's clock time (Torn time = UTC) as a timestamp. A time that looks ahead of now belongs to yesterday.
+function clockMs(line, now) {
+  const m = /(\d{1,2}):(\d{2}):(\d{2})\s*$/.exec(String(line || '').trim()); now = now || Date.now();
+  if (!m) return now;
+  const d = new Date(now); let t = Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), Number(m[1]), Number(m[2]), Number(m[3]));
+  if (t > now + 120000) t -= 86400000;
+  return t;
+}
+const NEEDLE_MS = 120000;
+// Seconds left on each needle active on you, from when it was injected.
+const needlesLeft = (N, now) => { const out = {}; now = now || Date.now(); for (const id in N || {}) { const left = Math.ceil((N[id] + NEEDLE_MS - now) / 1000); if (left > 0 && left <= 121) out[id] = left; } return out; };
 // New action-log lines since the last look. Torn's wording: "A missed B with his X", "A hit B with his X in the Stomach for 1218",
 // "A fired 1 round of his X hitting B in the Right leg for 1712", and an effect as its own line starting with the one affected: "B is eviscerated".
 function logNews(prev, cur, me, weaponName, names, opp) {
   const left = prev.slice(), fresh = [];
   for (const t of cur) { const i = left.indexOf(t); if (i >= 0) left.splice(i, 1); else fresh.push(t); }
-  const L = { result: null, fx: {}, lines: fresh.length };
+  const L = { result: null, fx: {}, lines: fresh.length, needles: [], oppNeedles: [], lost: false };
   const m = String(me || '').toLowerCase(), o = String(opp || '').toLowerCase(), wn = String(weaponName || '').toLowerCase();
   for (const raw of fresh) {
     let t = raw.toLowerCase();
+    // "A injected a syringe of Epinephrine into his arm 06:58:35": who, which needle, and Torn's own clock time for it
+    const nd = /injected a syringe of (\w+)/.exec(t), id = nd && needleOf(nd[1]);
+    if (id) { const at = clockMs(raw); if (m && t.startsWith(m)) L.needles.push({ id, at }); else if (o && t.startsWith(o)) L.oppNeedles.push({ id, at }); }
+    if (m && (t.startsWith(m + ' lost to') || t.includes('hospitalized ' + m) || t.includes('mugged ' + m) || t.includes('defeated ' + m))) L.lost = true;
     if (m && t.startsWith(m) && (!wn || t.includes(wn))) { if (/\bmissed\b/.test(t)) { if (L.result == null) L.result = 'miss'; } else if (/\bfor\s+[\d,]+/.test(t)) L.result = 'hit'; }
     for (const nm of names || []) if (nm) t = t.split(nm.toLowerCase()).join(' ');     // a weapon called "Poison Umbrella" is not an effect
     if (o ? t.startsWith(o) || (t.includes(o) && !(m && t.startsWith(m) && / is | was /.test(t.slice(m.length, m.length + 5)))) : !(m && t.startsWith(m))) {
@@ -23406,7 +23454,7 @@ function logNews(prev, cur, me, weaponName, names, opp) {
   }
   return L;
 }
-if (window.__TUCC_TEST) window.__tuccCombatDesk = { readWeapons, readHealth, readOpp, boxEffects, readLog, players, parseAmmo, parsePerks, perkPct, modInfo, armourInfo, tempBlocked, dotWorth, score, rank, bestMain, typeKey, buildPlan, choose, settle, advance, newFight, logNews, bonusId, modeList, finishWord, reloading, ready, DEF };
+if (window.__TUCC_TEST) window.__tuccCombatDesk = { readWeapons, readHealth, readOpp, boxEffects, readLog, players, parseAmmo, clockMs, needlesLeft, parsePerks, perkPct, modInfo, armourInfo, tempBlocked, dotWorth, score, rank, bestMain, typeKey, buildPlan, choose, settle, advance, newFight, logNews, bonusId, modeList, finishWord, reloading, ready, DEF };
 
 /* ---------- the button ---------- */
 GM_addStyle(`#tucc-cd{position:fixed;z-index:2147481000;width:190px;display:flex;flex-direction:column;gap:5px;font:600 12px/16px Arial,Helvetica,sans-serif;color:#ddd;user-select:none;-webkit-user-select:none;touch-action:manipulation;box-sizing:border-box}
@@ -23418,10 +23466,9 @@ GM_addStyle(`#tucc-cd{position:fixed;z-index:2147481000;width:190px;display:flex
 #tucc-cd .cd-main small{font:600 11px/13px Arial,Helvetica,sans-serif;letter-spacing:.2px;color:rgba(255,255,255,.78);min-height:13px}
 #tucc-cd .cd-pan{background:linear-gradient(180deg,#333,#2a2a2a);border:1px solid #111;border-radius:8px;padding:6px 8px;box-shadow:inset 0 1px 0 rgba(255,255,255,.05);min-width:0}
 #tucc-cd .cd-pan:empty{display:none}
-#tucc-cd .cd-seg{display:flex;border:1px solid #111;border-radius:6px;overflow:hidden;background:#222}
+#tucc-cd .cd-seg{display:flex;flex-wrap:wrap;gap:1px;border:1px solid #111;border-radius:6px;overflow:hidden;background:#111}
 #tucc-cd .cd-seg+.cd-seg{margin-top:5px}
-#tucc-cd .cd-c{flex:1 1 0;min-width:0;min-height:26px;padding:3px 6px;border:0;border-left:1px solid #111;background:transparent;color:#aaa;font:600 11px/14px Arial,Helvetica,sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer}
-#tucc-cd .cd-c:first-child{border-left:0}
+#tucc-cd .cd-c{flex:1 1 auto;min-width:0;min-height:26px;padding:3px 8px;border:0;background:#222;color:#aaa;font:600 11px/14px Arial,Helvetica,sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer}
 #tucc-cd .cd-c:hover{color:#fff;background:#383838}
 #tucc-cd .cd-c.on{background:linear-gradient(180deg,#a8241c,#86190f);color:#fff}
 #tucc-cd .cd-c.miss:not(.on){color:#777}
@@ -23452,10 +23499,21 @@ GM_addStyle(`#tucc-cd{position:fixed;z-index:2147481000;width:190px;display:flex
 #tucc-win-combatdesk .cd-g{display:grid;grid-template-columns:auto 1fr;gap:6px 10px;align-items:center;margin-bottom:10px}
 #tucc-win-combatdesk .cd-seq{margin-bottom:10px}
 #tucc-win-combatdesk .cd-st{display:flex;gap:4px;margin-top:3px}
-@media (max-width:700px){#tucc-cd.dock{grid-template-columns:1fr 1fr;gap:6px}#tucc-cd.dock .cd-main{grid-column:1 / -1;grid-row:1;min-height:66px}#tucc-cd.dock .cd-l{grid-column:1;grid-row:2}#tucc-cd.dock .cd-r{grid-column:2;grid-row:2;align-items:flex-start}#tucc-cd.dock.shut .cd-r{grid-column:1 / -1;justify-content:center}}`);
+@media (max-width:700px){#tucc-cd.dock{grid-template-columns:1fr;gap:6px}#tucc-cd.dock .cd-main{grid-column:1;grid-row:1;min-height:66px}#tucc-cd.dock .cd-l{grid-column:1;grid-row:2}#tucc-cd.dock .cd-r{grid-column:1;grid-row:3;align-items:flex-start}#tucc-cd.dock.shut .cd-r{justify-content:center}}`);
 
 // Your perks and weapon types (Torn API, optional), armour piece names, and what opponents were last seen carrying.
 const INTEL = { perks: null, gear: {} };
+// Needles active on you: when each was injected (kept across pages, since they last 120 seconds whatever fight you are in).
+let ACTIVE = GM_getValue('needles', null) || {};
+let oppNeedles = {};
+function noteLog(L) {
+  let ch = false;
+  for (const n of L.needles || []) if (!(ACTIVE[n.id] >= n.at)) { ACTIVE[n.id] = n.at; ch = true; }
+  if (L.lost && Object.keys(ACTIVE).length) { ACTIVE = {}; ch = true; }          // hospital ends them
+  for (const id in ACTIVE) if (Date.now() - ACTIVE[id] > NEEDLE_MS) { delete ACTIVE[id]; ch = true; }
+  if (ch) GM_setValue('needles', ACTIVE);
+  for (const n of L.oppNeedles || []) oppNeedles[n.id] = Math.max(oppNeedles[n.id] || 0, n.at);
+}
 let ITEMS = GM_getValue('items', null) || { 680: 'EOD Helmet', 681: 'EOD Apron', 682: 'EOD Pants', 683: 'EOD Boots', 684: 'EOD Gloves' };
 let OPPS = GM_getValue('opps', null) || {};
 const asked = {};
@@ -23512,7 +23570,7 @@ function oppInfo() {
 function intel(W) {
   const gear = {};
   for (const s of SLOTS) { const g = INTEL.gear[s.key] || {}, x = W[s.key] || {}; if (x.damage || g.damage) gear[s.key] = { damage: x.damage || g.damage, accuracy: x.accuracy || g.accuracy, type: g.type || '' }; }
-  return { perks: INTEL.perks, gear, armour: oppInfo() };
+  return { perks: INTEL.perks, gear, armour: oppInfo(), needles: needlesLeft(ACTIVE) };
 }
 let F = newFight(), startAt = 0, finishAt = 0, hitAt = 0, fightKey = '', logPrev = [];
 const root = document.createElement('div'); root.id = 'tucc-cd';
@@ -23586,8 +23644,10 @@ function chip(a, val, text, on, extra) { return `<button type="button" class="cd
 let lastHtml = '', lastMain = '';
 function render() {
   const key = location.search;
-  if (key !== fightKey) { fightKey = key; F = newFight(); logPrev = readLog(); }
+  if (key !== fightKey) { fightKey = key; F = newFight(); logPrev = readLog(); oppNeedles = {}; }
   dock(); hideStart();
+  // Needles are read from every log line still on the page, so one injected by hand or before a reload is still seen.
+  { const pl = players(); noteLog(logNews([], readLog(), nameOf(pl.me), '', [], nameOf(pl.opp))); }
   const W = readWeapons(), H = readHealth(), I = intel(W), A = I.armour;
   const fin = findFinish(finishWord(S)), start = !fin && findStart();
   let big = '', small = '';
@@ -23615,6 +23675,10 @@ function render() {
       const tail = (x.mods.length ? ' <i>' + x.mods.map((m) => esc(m.name)).join(', ') + '</i>' : '') + (pk ? ' <em>+' + pk + '%</em>' : '');
       return parts.length || tail ? `<div class="cd-w" title="${esc(x.name)}"><b>${s.short}</b><span>${parts.join(', ')}${tail}</span></div>` : '';
     }).join('');
+    const nl = needlesLeft(ACTIVE), on = Object.keys(nl), ol = needlesLeft(oppNeedles), oon = Object.keys(ol);
+    const clock = (sec) => Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '0');
+    if (on.length) hr += `<div class="cd-w"><b>+</b><span>${on.map((id) => `${esc(NEEDLES_SHORT[id])} <em data-cd-end="${ACTIVE[id] + NEEDLE_MS}">${clock(nl[id])}</em>`).join(' · ')}</span></div>`;
+    if (oon.length) hr += `<div class="cd-w warn"><b>vs</b><span>${oon.map((id) => `${esc(NEEDLES_SHORT[id])} <i data-cd-end="${oppNeedles[id] + NEEDLE_MS}">${clock(ol[id])}</i>`).join(' · ')}</span></div>`;
     if (A.tag) hr += `<div class="cd-w${tempBlocked(W, A) ? ' warn' : ''}" title="${esc((A.names || []).join(', '))}"><b>vs</b><span>${esc(A.tag)}${A.saved ? ' <i>saved</i>' : ''}${tempBlocked(W, A) ? ' · Temp blocked' : ''}</span></div>`;
     hr += '</div>';
   }
@@ -23650,7 +23714,6 @@ function drawSettings() {
     + `<span>Main</span><select data-k="main">${opt('best', 'Best', S.main)}${slotOpts(S.main)}</select>`
     + `<span>Fallback</span><select data-k="fallback">${opt('best', 'Best', S.fallback)}${slotOpts(S.fallback)}</select>`
     + `<span>Finish</span><select data-k="finish">${fo(S.finish)}</select>`
-    + `<span>War finish</span><select data-k="warFinish">${fo(S.warFinish)}</select>`
     + `<span>Finisher at</span><select data-k="finishAt" data-num="1">${[5, 10, 15, 20, 25, 30].map((n) => opt(n, n + '% life', S.finishAt)).join('')}</select>`
     + `<span>Position</span><select data-k="dock">${opt('fight', 'Under fight', S.dock)}${opt('float', 'Floating', S.dock)}</select>`
     + `<span>Side</span><select data-k="side">${opt('right', 'Right', S.side)}${opt('left', 'Left', S.side)}</select>`
@@ -23703,5 +23766,12 @@ visible(loadIntel);
 let queued = false;
 new MutationObserver(() => { if (queued) return; queued = true; setTimeout(() => { queued = false; render(); }, 120); }).observe(document.body || document.documentElement, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ['class', 'aria-disabled', 'disabled'] });
 window.addEventListener('resize', place);
+// Needle countdowns tick once a second (display only), and the strip redraws when one runs out.
+setInterval(() => {
+  const els = root.querySelectorAll('[data-cd-end]'); if (!els.length) return;
+  let done = false;
+  els.forEach((el) => { const s = Math.ceil((Number(el.dataset.cdEnd) - Date.now()) / 1000); if (s <= 0) done = true; else el.textContent = Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); });
+  if (done) render();
+}, 1000);
 
 });

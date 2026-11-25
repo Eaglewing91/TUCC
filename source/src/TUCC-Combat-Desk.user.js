@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         TUCC Combat Desk
 // @namespace    eaglewing.torn.tucc.combatdesk
-// @version      0.4.2
+// @version      0.5.0
 // @description  Attack page: one button that starts the fight, uses the right weapon for the turn and presses your finish option. One press = one action. Plans come from your own equipped weapons, their bonuses and mods, your perks, the effects on both fighters and the opponent's armour; modes pick the finishing weapon (War, Mug, Merc, Farm). Makes no requests to torn.com.
 // @author       Eaglewing [571041]
 // @match        https://www.torn.com/page.php?sid=attack&user2ID=*
@@ -63,10 +63,12 @@ const DOT_DEF = { poison: [950, 19], lacerate: [400, 9], bleed: [200, 9], burn: 
 // How each effect shows up in icon names and log lines (word stems).
 const FX = { poison: /poison/, bleed: /bleed/, burn: /burn/, lacerate: /lacerat/, weaken: /weaken/, wither: /wither/, slow: /slow/, cripple: /crippl/, eviscerate: /eviscerat/ };
 const NEEDLES = { epinephrine: 'Epinephrine', melatonin: 'Melatonin', serotonin: 'Serotonin', tyrosine: 'Tyrosine' };
+const NEEDLES_SHORT = { epinephrine: 'Epi', melatonin: 'Mel', serotonin: 'Ser', tyrosine: 'Tyr' };
 const needleOf = (name) => Object.keys(NEEDLES).find((k) => new RegExp(k, 'i').test(name || '')) || null;
 const MODES = {
   normal: { label: 'Normal', bonus: [] },
-  war: { label: 'War', bonus: ['warlord'] },
+  warfarm: { label: 'War Farm', bonus: ['warlord'], finish: 'leave' },
+  warpush: { label: 'War Push', bonus: ['warlord'], finish: 'hosp' },
   mug: { label: 'Mug', bonus: ['plunder'], finish: 'mug' },
   merc: { label: 'Merc', bonus: ['stricken'], finish: 'hosp' },
   farm: { label: 'Farm', bonus: ['revitalize', 'proficience'], finish: 'leave' },
@@ -82,6 +84,7 @@ const DEF = {
 const S = Object.assign({}, DEF, GM_getValue('settings', {}) || {});
 if (!Array.isArray(S.seqs) || S.seqs.length !== 3) S.seqs = JSON.parse(JSON.stringify(DEF.seqs));
 if (S.plan === 'auto') S.plan = 'smart';
+if (S.mode === 'war') S.mode = S.warFinish === 'hosp' ? 'warpush' : 'warfarm';
 const save = () => GM_setValue('settings', S);
 
 /* ---------- reading the page ---------- */
@@ -310,19 +313,21 @@ function dotWorth(W, I, key, main) {
 
 /* ---------- the plan (pure: no page access, so it can be tested on its own) ---------- */
 const withBonus = (W, ids, usableOnly) => SLOTS.map((s) => s.key).find((k) => (!usableOnly || W[k].usable) && ids.some((id) => has(W[k], id))) || null;
-const modeList = (W) => Object.keys(MODES).filter((m) => m === 'normal' || m === 'mug' || m === 'merc' || withBonus(W, MODES[m].bonus));
-const finishWord = (s) => (s.mode === 'war' ? s.warFinish : (MODES[s.mode] || {}).finish || s.finish) || 'leave';
+const modeList = (W) => Object.keys(MODES).filter((m) => m !== 'farm' || withBonus(W, MODES[m].bonus));
+const finishWord = (s) => (MODES[s.mode] || {}).finish || s.finish || 'leave';
 
 function buildPlan(W, s, I) {
-  const A = I && I.armour;
+  const A = I && I.armour, live = (I && I.needles) || {};
   const main = s.main === 'best' ? bestMain(W, I, s, true) || bestMain(W, I, s) || 'primary' : s.main;
   if (/^seq[0-2]$/.test(s.plan)) return (s.seqs[Number(s.plan.slice(3))].steps || []).filter((x) => x && SLOT[x.w]).map((x) => ({ w: x.w, n: Number(x.n) || 0, by: x.by === 'use' ? 'use' : 'hit' }));
   const steps = [], smart = s.plan === 'smart';
-  const needle = W.temp && W.temp.needle, ass = withBonus(W, ['assassinate']);
+  let needle = W.temp && W.temp.needle; const ass = withBonus(W, ['assassinate']);
+  const held = needle && live[needle] > 0;                 // that needle is still active on you: keep it for later
+  if (held) needle = null;
   // A needle (Epinephrine, Melatonin, Serotonin, Tyrosine) always goes first: it lifts every hit after it.
   if (needle && (smart || s.tempFirst)) steps.push({ w: 'temp', n: 1, by: 'use', why: NEEDLES[needle] });
   if (ass && !needle && (smart || s.assFirst)) steps.push({ w: ass, n: 1, by: 'use', why: 'Assassinate' });
-  if (!needle && (smart || s.tempFirst) && !(smart && tempBlocked(W, A))) steps.push({ w: 'temp', n: 1, by: 'use', why: 'Temp' });
+  if (!needle && !held && (smart || s.tempFirst) && !(smart && tempBlocked(W, A))) steps.push({ w: 'temp', n: 1, by: 'use', why: 'Temp' });
   if (smart) {
     const bs = withBonus(W, ['blindside']);
     if (bs) steps.push({ w: bs, n: 0, by: 'full', why: 'Blindside' });
@@ -394,15 +399,30 @@ function advance(F, pick, H) {
   return n;
 }
 const newFight = () => ({ step: 0, stepUses: 0, stepHits: 0, hits: 0, turn: 0, last: null, lastStep: -1, lastOpp: null, hpOk: false, fx: {} });
+// A log line's clock time (Torn time = UTC) as a timestamp. A time that looks ahead of now belongs to yesterday.
+function clockMs(line, now) {
+  const m = /(\d{1,2}):(\d{2}):(\d{2})\s*$/.exec(String(line || '').trim()); now = now || Date.now();
+  if (!m) return now;
+  const d = new Date(now); let t = Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), Number(m[1]), Number(m[2]), Number(m[3]));
+  if (t > now + 120000) t -= 86400000;
+  return t;
+}
+const NEEDLE_MS = 120000;
+// Seconds left on each needle active on you, from when it was injected.
+const needlesLeft = (N, now) => { const out = {}; now = now || Date.now(); for (const id in N || {}) { const left = Math.ceil((N[id] + NEEDLE_MS - now) / 1000); if (left > 0 && left <= 121) out[id] = left; } return out; };
 // New action-log lines since the last look. Torn's wording: "A missed B with his X", "A hit B with his X in the Stomach for 1218",
 // "A fired 1 round of his X hitting B in the Right leg for 1712", and an effect as its own line starting with the one affected: "B is eviscerated".
 function logNews(prev, cur, me, weaponName, names, opp) {
   const left = prev.slice(), fresh = [];
   for (const t of cur) { const i = left.indexOf(t); if (i >= 0) left.splice(i, 1); else fresh.push(t); }
-  const L = { result: null, fx: {}, lines: fresh.length };
+  const L = { result: null, fx: {}, lines: fresh.length, needles: [], oppNeedles: [], lost: false };
   const m = String(me || '').toLowerCase(), o = String(opp || '').toLowerCase(), wn = String(weaponName || '').toLowerCase();
   for (const raw of fresh) {
     let t = raw.toLowerCase();
+    // "A injected a syringe of Epinephrine into his arm 06:58:35": who, which needle, and Torn's own clock time for it
+    const nd = /injected a syringe of (\w+)/.exec(t), id = nd && needleOf(nd[1]);
+    if (id) { const at = clockMs(raw); if (m && t.startsWith(m)) L.needles.push({ id, at }); else if (o && t.startsWith(o)) L.oppNeedles.push({ id, at }); }
+    if (m && (t.startsWith(m + ' lost to') || t.includes('hospitalized ' + m) || t.includes('mugged ' + m) || t.includes('defeated ' + m))) L.lost = true;
     if (m && t.startsWith(m) && (!wn || t.includes(wn))) { if (/\bmissed\b/.test(t)) { if (L.result == null) L.result = 'miss'; } else if (/\bfor\s+[\d,]+/.test(t)) L.result = 'hit'; }
     for (const nm of names || []) if (nm) t = t.split(nm.toLowerCase()).join(' ');     // a weapon called "Poison Umbrella" is not an effect
     if (o ? t.startsWith(o) || (t.includes(o) && !(m && t.startsWith(m) && / is | was /.test(t.slice(m.length, m.length + 5)))) : !(m && t.startsWith(m))) {
@@ -412,7 +432,7 @@ function logNews(prev, cur, me, weaponName, names, opp) {
   }
   return L;
 }
-if (window.__TUCC_TEST) window.__tuccCombatDesk = { readWeapons, readHealth, readOpp, boxEffects, readLog, players, parseAmmo, parsePerks, perkPct, modInfo, armourInfo, tempBlocked, dotWorth, score, rank, bestMain, typeKey, buildPlan, choose, settle, advance, newFight, logNews, bonusId, modeList, finishWord, reloading, ready, DEF };
+if (window.__TUCC_TEST) window.__tuccCombatDesk = { readWeapons, readHealth, readOpp, boxEffects, readLog, players, parseAmmo, clockMs, needlesLeft, parsePerks, perkPct, modInfo, armourInfo, tempBlocked, dotWorth, score, rank, bestMain, typeKey, buildPlan, choose, settle, advance, newFight, logNews, bonusId, modeList, finishWord, reloading, ready, DEF };
 
 /* ---------- the button ---------- */
 GM_addStyle(`#tucc-cd{position:fixed;z-index:2147481000;width:190px;display:flex;flex-direction:column;gap:5px;font:600 12px/16px Arial,Helvetica,sans-serif;color:#ddd;user-select:none;-webkit-user-select:none;touch-action:manipulation;box-sizing:border-box}
@@ -424,10 +444,9 @@ GM_addStyle(`#tucc-cd{position:fixed;z-index:2147481000;width:190px;display:flex
 #tucc-cd .cd-main small{font:600 11px/13px Arial,Helvetica,sans-serif;letter-spacing:.2px;color:rgba(255,255,255,.78);min-height:13px}
 #tucc-cd .cd-pan{background:linear-gradient(180deg,#333,#2a2a2a);border:1px solid #111;border-radius:8px;padding:6px 8px;box-shadow:inset 0 1px 0 rgba(255,255,255,.05);min-width:0}
 #tucc-cd .cd-pan:empty{display:none}
-#tucc-cd .cd-seg{display:flex;border:1px solid #111;border-radius:6px;overflow:hidden;background:#222}
+#tucc-cd .cd-seg{display:flex;flex-wrap:wrap;gap:1px;border:1px solid #111;border-radius:6px;overflow:hidden;background:#111}
 #tucc-cd .cd-seg+.cd-seg{margin-top:5px}
-#tucc-cd .cd-c{flex:1 1 0;min-width:0;min-height:26px;padding:3px 6px;border:0;border-left:1px solid #111;background:transparent;color:#aaa;font:600 11px/14px Arial,Helvetica,sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer}
-#tucc-cd .cd-c:first-child{border-left:0}
+#tucc-cd .cd-c{flex:1 1 auto;min-width:0;min-height:26px;padding:3px 8px;border:0;background:#222;color:#aaa;font:600 11px/14px Arial,Helvetica,sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer}
 #tucc-cd .cd-c:hover{color:#fff;background:#383838}
 #tucc-cd .cd-c.on{background:linear-gradient(180deg,#a8241c,#86190f);color:#fff}
 #tucc-cd .cd-c.miss:not(.on){color:#777}
@@ -458,10 +477,21 @@ GM_addStyle(`#tucc-cd{position:fixed;z-index:2147481000;width:190px;display:flex
 #tucc-win-combatdesk .cd-g{display:grid;grid-template-columns:auto 1fr;gap:6px 10px;align-items:center;margin-bottom:10px}
 #tucc-win-combatdesk .cd-seq{margin-bottom:10px}
 #tucc-win-combatdesk .cd-st{display:flex;gap:4px;margin-top:3px}
-@media (max-width:700px){#tucc-cd.dock{grid-template-columns:1fr 1fr;gap:6px}#tucc-cd.dock .cd-main{grid-column:1 / -1;grid-row:1;min-height:66px}#tucc-cd.dock .cd-l{grid-column:1;grid-row:2}#tucc-cd.dock .cd-r{grid-column:2;grid-row:2;align-items:flex-start}#tucc-cd.dock.shut .cd-r{grid-column:1 / -1;justify-content:center}}`);
+@media (max-width:700px){#tucc-cd.dock{grid-template-columns:1fr;gap:6px}#tucc-cd.dock .cd-main{grid-column:1;grid-row:1;min-height:66px}#tucc-cd.dock .cd-l{grid-column:1;grid-row:2}#tucc-cd.dock .cd-r{grid-column:1;grid-row:3;align-items:flex-start}#tucc-cd.dock.shut .cd-r{justify-content:center}}`);
 
 // Your perks and weapon types (Torn API, optional), armour piece names, and what opponents were last seen carrying.
 const INTEL = { perks: null, gear: {} };
+// Needles active on you: when each was injected (kept across pages, since they last 120 seconds whatever fight you are in).
+let ACTIVE = GM_getValue('needles', null) || {};
+let oppNeedles = {};
+function noteLog(L) {
+  let ch = false;
+  for (const n of L.needles || []) if (!(ACTIVE[n.id] >= n.at)) { ACTIVE[n.id] = n.at; ch = true; }
+  if (L.lost && Object.keys(ACTIVE).length) { ACTIVE = {}; ch = true; }          // hospital ends them
+  for (const id in ACTIVE) if (Date.now() - ACTIVE[id] > NEEDLE_MS) { delete ACTIVE[id]; ch = true; }
+  if (ch) GM_setValue('needles', ACTIVE);
+  for (const n of L.oppNeedles || []) oppNeedles[n.id] = Math.max(oppNeedles[n.id] || 0, n.at);
+}
 let ITEMS = GM_getValue('items', null) || { 680: 'EOD Helmet', 681: 'EOD Apron', 682: 'EOD Pants', 683: 'EOD Boots', 684: 'EOD Gloves' };
 let OPPS = GM_getValue('opps', null) || {};
 const asked = {};
@@ -518,7 +548,7 @@ function oppInfo() {
 function intel(W) {
   const gear = {};
   for (const s of SLOTS) { const g = INTEL.gear[s.key] || {}, x = W[s.key] || {}; if (x.damage || g.damage) gear[s.key] = { damage: x.damage || g.damage, accuracy: x.accuracy || g.accuracy, type: g.type || '' }; }
-  return { perks: INTEL.perks, gear, armour: oppInfo() };
+  return { perks: INTEL.perks, gear, armour: oppInfo(), needles: needlesLeft(ACTIVE) };
 }
 let F = newFight(), startAt = 0, finishAt = 0, hitAt = 0, fightKey = '', logPrev = [];
 const root = document.createElement('div'); root.id = 'tucc-cd';
@@ -592,8 +622,10 @@ function chip(a, val, text, on, extra) { return `<button type="button" class="cd
 let lastHtml = '', lastMain = '';
 function render() {
   const key = location.search;
-  if (key !== fightKey) { fightKey = key; F = newFight(); logPrev = readLog(); }
+  if (key !== fightKey) { fightKey = key; F = newFight(); logPrev = readLog(); oppNeedles = {}; }
   dock(); hideStart();
+  // Needles are read from every log line still on the page, so one injected by hand or before a reload is still seen.
+  { const pl = players(); noteLog(logNews([], readLog(), nameOf(pl.me), '', [], nameOf(pl.opp))); }
   const W = readWeapons(), H = readHealth(), I = intel(W), A = I.armour;
   const fin = findFinish(finishWord(S)), start = !fin && findStart();
   let big = '', small = '';
@@ -621,6 +653,10 @@ function render() {
       const tail = (x.mods.length ? ' <i>' + x.mods.map((m) => esc(m.name)).join(', ') + '</i>' : '') + (pk ? ' <em>+' + pk + '%</em>' : '');
       return parts.length || tail ? `<div class="cd-w" title="${esc(x.name)}"><b>${s.short}</b><span>${parts.join(', ')}${tail}</span></div>` : '';
     }).join('');
+    const nl = needlesLeft(ACTIVE), on = Object.keys(nl), ol = needlesLeft(oppNeedles), oon = Object.keys(ol);
+    const clock = (sec) => Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '0');
+    if (on.length) hr += `<div class="cd-w"><b>+</b><span>${on.map((id) => `${esc(NEEDLES_SHORT[id])} <em data-cd-end="${ACTIVE[id] + NEEDLE_MS}">${clock(nl[id])}</em>`).join(' · ')}</span></div>`;
+    if (oon.length) hr += `<div class="cd-w warn"><b>vs</b><span>${oon.map((id) => `${esc(NEEDLES_SHORT[id])} <i data-cd-end="${oppNeedles[id] + NEEDLE_MS}">${clock(ol[id])}</i>`).join(' · ')}</span></div>`;
     if (A.tag) hr += `<div class="cd-w${tempBlocked(W, A) ? ' warn' : ''}" title="${esc((A.names || []).join(', '))}"><b>vs</b><span>${esc(A.tag)}${A.saved ? ' <i>saved</i>' : ''}${tempBlocked(W, A) ? ' · Temp blocked' : ''}</span></div>`;
     hr += '</div>';
   }
@@ -656,7 +692,6 @@ function drawSettings() {
     + `<span>Main</span><select data-k="main">${opt('best', 'Best', S.main)}${slotOpts(S.main)}</select>`
     + `<span>Fallback</span><select data-k="fallback">${opt('best', 'Best', S.fallback)}${slotOpts(S.fallback)}</select>`
     + `<span>Finish</span><select data-k="finish">${fo(S.finish)}</select>`
-    + `<span>War finish</span><select data-k="warFinish">${fo(S.warFinish)}</select>`
     + `<span>Finisher at</span><select data-k="finishAt" data-num="1">${[5, 10, 15, 20, 25, 30].map((n) => opt(n, n + '% life', S.finishAt)).join('')}</select>`
     + `<span>Position</span><select data-k="dock">${opt('fight', 'Under fight', S.dock)}${opt('float', 'Floating', S.dock)}</select>`
     + `<span>Side</span><select data-k="side">${opt('right', 'Right', S.side)}${opt('left', 'Left', S.side)}</select>`
@@ -709,3 +744,10 @@ visible(loadIntel);
 let queued = false;
 new MutationObserver(() => { if (queued) return; queued = true; setTimeout(() => { queued = false; render(); }, 120); }).observe(document.body || document.documentElement, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ['class', 'aria-disabled', 'disabled'] });
 window.addEventListener('resize', place);
+// Needle countdowns tick once a second (display only), and the strip redraws when one runs out.
+setInterval(() => {
+  const els = root.querySelectorAll('[data-cd-end]'); if (!els.length) return;
+  let done = false;
+  els.forEach((el) => { const s = Math.ceil((Number(el.dataset.cdEnd) - Date.now()) / 1000); if (s <= 0) done = true; else el.textContent = Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); });
+  if (done) render();
+}, 1000);

@@ -2,6 +2,23 @@
 
 All dates are 2026. Versions before 0.14.4 were private test builds.
 
+## 0.16.3-tablet · 25 November
+
+**War Room 1.2.0: refresh speed**
+- **Three speeds:** 30 seconds (default), 5 seconds or 1 second, chosen with buttons above the list and remembered.
+- **Light where it can be.** At the faster speeds only the enemy member list is asked for each time; the war score and both chains keep their slower schedule. A refresh is skipped while the last one is still waiting, so calls never pile up.
+- **Steady list.** The list is only redrawn when something has changed, so it doesn't flicker or lose your place.
+- **API use:** 5 seconds is 12 calls a minute and 1 second is 60, against Torn's limit of 100 a minute. If TUCC's shared API budget fills up, War Room says "Slowed: API budget full". The budget can be raised in TUCC's API settings.
+- Refreshing still stops when the window is closed or the tab is hidden.
+
+**Combat Desk**
+- **Two war modes.** **War Farm** finishes with Leave and **War Push** finishes with Hosp. Both bring in a Warlord weapon for the last hit if you carry one. They replace the single War mode and its "War finish" setting.
+- **Needle detection.** Combat Desk reads injections from the action log and shows each needle active on you (Epi, Mel, Ser, Tyr) with its time left out of 120 seconds. The timing uses Torn's own clock on the log line, and it carries across attack pages, so it still shows in your next fight.
+- **No wasted needle.** If the needle in your temporary slot is already active on you, the plan skips it and goes straight to your weapon.
+- **Opponent's needles** are flagged on the strip with their time left.
+- **Losing a fight** clears your needles, as Torn does.
+- **Phones:** the mode buttons now sit on their own full-width row.
+
 ## 0.16.2-tablet · 25 November
 
 **War Room 1.1.0: BSP stats column**
