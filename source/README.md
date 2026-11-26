@@ -10,5 +10,5 @@
 To rebuild:
 
 ```
-python3 build/build.py 0.16.4-tablet TUCC.user.js
+python3 build/build.py 0.16.5-tablet TUCC.user.js
 ```

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         TUCC Combat Desk
 // @namespace    eaglewing.torn.tucc.combatdesk
-// @version      0.5.0
+// @version      0.6.0
 // @description  Attack page: one button that starts the fight, uses the right weapon for the turn and presses your finish option. One press = one action. Plans come from your own equipped weapons, their bonuses and mods, your perks, the effects on both fighters and the opponent's armour; modes pick the finishing weapon (War, Mug, Merc, Farm). Makes no requests to torn.com.
 // @author       Eaglewing [571041]
 // @match        https://www.torn.com/page.php?sid=attack&user2ID=*
@@ -408,6 +408,9 @@ function clockMs(line, now) {
   return t;
 }
 const NEEDLE_MS = 120000;
+const NEEDLE_STAT = { epinephrine: 'STR', melatonin: 'SPD', serotonin: 'DEF', tyrosine: 'DEX' };
+// under 30 seconds a needle turns amber, under 10 red
+const needleCls = (left) => (left <= 10 ? 'end' : left <= 30 ? 'low' : 'on');
 // Seconds left on each needle active on you, from when it was injected.
 const needlesLeft = (N, now) => { const out = {}; now = now || Date.now(); for (const id in N || {}) { const left = Math.ceil((N[id] + NEEDLE_MS - now) / 1000); if (left > 0 && left <= 121) out[id] = left; } return out; };
 // New action-log lines since the last look. Torn's wording: "A missed B with his X", "A hit B with his X in the Stomach for 1218",
@@ -472,6 +475,23 @@ GM_addStyle(`#tucc-cd{position:fixed;z-index:2147481000;width:190px;display:flex
 #tucc-cd.dock.shut .cd-l{display:none}
 #tucc-cd.dock.shut .cd-r{background:none;border-color:transparent;box-shadow:none;justify-content:flex-start;padding-left:0}
 #tucc-cd.dock .cd-grip,#tucc-cd.dock .cd-lock{display:none}
+#tucc-cd .cd-n{display:none;gap:6px;align-items:stretch}
+#tucc-cd .cd-n.on{display:flex}
+#tucc-cd.dock .cd-n{grid-column:1 / -1;grid-row:2}
+#tucc-cd .cd-nd{position:relative;flex:1 1 0;min-width:0;display:flex;align-items:baseline;justify-content:center;gap:6px;padding:7px 8px 9px;border:1px solid #2f6b1f;border-radius:7px;background:#16260f;color:#d9f5c8;overflow:hidden}
+#tucc-cd .cd-nd b{font:700 13px/16px Arial,Helvetica,sans-serif;color:#fff}
+#tucc-cd .cd-nd i{font:700 9px/12px Arial,Helvetica,sans-serif;font-style:normal;letter-spacing:.5px;color:#8fce6c}
+#tucc-cd .cd-nd em{font:700 15px/16px Arial,Helvetica,sans-serif;font-style:normal;font-variant-numeric:tabular-nums;color:#9be870;margin-left:auto}
+#tucc-cd .cd-nd u{position:absolute;left:0;bottom:0;height:3px;background:#6fd03f;text-decoration:none;transition:width 1s linear}
+#tucc-cd .cd-nd.low{border-color:#8a5a00;background:#2b1f05}#tucc-cd .cd-nd.low i,#tucc-cd .cd-nd.low em{color:#ffb829}#tucc-cd .cd-nd.low u{background:#ffb829}
+#tucc-cd .cd-nd.end{border-color:#b3261e;background:#3a0d0a;animation:cd-pulse 1s ease-in-out infinite}#tucc-cd .cd-nd.end i,#tucc-cd .cd-nd.end em{color:#ff6b5e}#tucc-cd .cd-nd.end u{background:#ff5347}
+#tucc-cd .cd-nd.off{border-color:#2a2a2a;border-style:dashed;background:#1c1c1c}#tucc-cd .cd-nd.off b{color:#6e6e6e}#tucc-cd .cd-nd.off i,#tucc-cd .cd-nd.off em{color:#555}
+#tucc-cd .cd-no{flex:0 0 auto;display:flex;align-items:center;gap:8px;padding:7px 10px;border:1px solid #8a5a00;border-radius:7px;background:#2b1f05;color:#ffb829;font:700 12px/16px Arial,Helvetica,sans-serif}
+#tucc-cd .cd-no b{font:700 10px/15px Arial,Helvetica,sans-serif;color:#c98f1c}#tucc-cd .cd-no em{font-style:normal;font-variant-numeric:tabular-nums;color:#fff}
+#tucc-cd:not(.dock) .cd-n{flex-wrap:wrap}#tucc-cd:not(.dock) .cd-nd{flex:1 1 40%;padding:5px 6px 7px;gap:4px}#tucc-cd:not(.dock) .cd-nd i{display:none}#tucc-cd:not(.dock) .cd-no{flex:1 1 100%;justify-content:center}
+@keyframes cd-pulse{50%{box-shadow:0 0 0 2px rgba(255,83,71,.55)}}
+@media (prefers-reduced-motion:reduce){#tucc-cd .cd-nd.end{animation:none}#tucc-cd .cd-nd u{transition:none}}
+@media (max-width:700px){#tucc-cd.dock .cd-n{grid-column:1;grid-row:auto;flex-wrap:wrap}#tucc-cd .cd-nd{flex:1 1 40%;padding:6px 8px 8px}#tucc-cd .cd-no{flex:1 1 100%;justify-content:center}}
 [data-cd-hide="1"]{display:none !important}
 #tucc-win-combatdesk select,#tucc-win-combatdesk input[type=text]{background:#222;color:#eee;border:1px solid #555;border-radius:4px;padding:2px 4px;font:12px Arial,sans-serif}
 #tucc-win-combatdesk .cd-g{display:grid;grid-template-columns:auto 1fr;gap:6px 10px;align-items:center;margin-bottom:10px}
@@ -552,8 +572,8 @@ function intel(W) {
 }
 let F = newFight(), startAt = 0, finishAt = 0, hitAt = 0, fightKey = '', logPrev = [];
 const root = document.createElement('div'); root.id = 'tucc-cd';
-root.innerHTML = '<div class="cd-pan cd-l"></div><button type="button" class="cd-main"></button><div class="cd-pan cd-r"></div>';
-const panL = root.children[0], mainBtn = root.children[1], panR = root.children[2], pan = root;
+root.innerHTML = '<div class="cd-pan cd-l"></div><button type="button" class="cd-main"></button><div class="cd-pan cd-r"></div><div class="cd-n" role="status" aria-label="Needles"></div>';
+const panL = root.children[0], mainBtn = root.children[1], panR = root.children[2], panN = root.children[3], pan = root;
 const w = tucc.ui.window('combatdesk', 'Combat Desk', '');
 
 // Docked: a strip directly under the two fighters, inside the attack screen. Put back if Torn redraws that area.
@@ -619,7 +639,7 @@ mainBtn.addEventListener('click', act);
 mainBtn.addEventListener('keydown', (e) => { if (e.repeat) { e.preventDefault(); e.stopPropagation(); } });
 
 function chip(a, val, text, on, extra) { return `<button type="button" class="cd-c${on ? ' on' : ''}${extra || ''}" data-act="${a}" data-val="${esc(val)}" aria-pressed="${on ? 'true' : 'false'}">${esc(text)}</button>`; }
-let lastHtml = '', lastMain = '';
+let lastHtml = '', lastMain = '', lastN = '';
 function render() {
   const key = location.search;
   if (key !== fightKey) { fightKey = key; F = newFight(); logPrev = readLog(); oppNeedles = {}; }
@@ -653,16 +673,24 @@ function render() {
       const tail = (x.mods.length ? ' <i>' + x.mods.map((m) => esc(m.name)).join(', ') + '</i>' : '') + (pk ? ' <em>+' + pk + '%</em>' : '');
       return parts.length || tail ? `<div class="cd-w" title="${esc(x.name)}"><b>${s.short}</b><span>${parts.join(', ')}${tail}</span></div>` : '';
     }).join('');
-    const nl = needlesLeft(ACTIVE), on = Object.keys(nl), ol = needlesLeft(oppNeedles), oon = Object.keys(ol);
-    const clock = (sec) => Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '0');
-    if (on.length) hr += `<div class="cd-w"><b>+</b><span>${on.map((id) => `${esc(NEEDLES_SHORT[id])} <em data-cd-end="${ACTIVE[id] + NEEDLE_MS}">${clock(nl[id])}</em>`).join(' · ')}</span></div>`;
-    if (oon.length) hr += `<div class="cd-w warn"><b>vs</b><span>${oon.map((id) => `${esc(NEEDLES_SHORT[id])} <i data-cd-end="${oppNeedles[id] + NEEDLE_MS}">${clock(ol[id])}</i>`).join(' · ')}</span></div>`;
     if (A.tag) hr += `<div class="cd-w${tempBlocked(W, A) ? ' warn' : ''}" title="${esc((A.names || []).join(', '))}"><b>vs</b><span>${esc(A.tag)}${A.saved ? ' <i>saved</i>' : ''}${tempBlocked(W, A) ? ' · Temp blocked' : ''}</span></div>`;
     hr += '</div>';
   }
   const ib = (a, text, title, cls) => `<button type="button" class="cd-i${cls || ''}" data-act="${a}" title="${title}" aria-label="${title}">${text}</button>`;
   hr += '<div class="cd-t">' + ib('lock', S.locked ? '■' : '□', 'Lock position', ' cd-lock' + (S.locked ? ' on' : '')) + ib('grip', '✥', 'Move', ' cd-grip') + ib('set', '⚙', 'Settings') + ib('open', S.open ? '▴' : '▾', S.open ? 'Collapse' : 'Expand') + '</div>';
   if (hl + hr !== lastHtml) { panL.innerHTML = hl; panR.innerHTML = hr; lastHtml = hl + hr; }
+  // Needle bar: all four needles in one row, lit with a countdown while active on you. Shown even when collapsed.
+  const nl = needlesLeft(ACTIVE), ol = needlesLeft(oppNeedles), clock = (sec) => Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '0');
+  let hn = '';
+  if (Object.keys(nl).length || Object.keys(ol).length) {
+    hn = Object.keys(NEEDLES).map((id) => { const left = nl[id], end = ACTIVE[id] + NEEDLE_MS;
+      return left ? `<div class="cd-nd ${needleCls(left)}" title="${esc(NEEDLES[id])}"><b>${esc(NEEDLES_SHORT[id])}</b><i>${NEEDLE_STAT[id]}</i><em data-cd-end="${end}">${clock(left)}</em><u style="width:${Math.round(left / 1.2)}%"></u></div>`
+        : `<div class="cd-nd off" title="${esc(NEEDLES[id])}"><b>${esc(NEEDLES_SHORT[id])}</b><i>${NEEDLE_STAT[id]}</i><em>–</em></div>`; }).join('');
+    const oon = Object.keys(ol);
+    if (oon.length) hn += `<div class="cd-no" title="Needles on your opponent"><b>vs</b>${oon.map((id) => `<span>${esc(NEEDLES_SHORT[id])} <em data-cd-end="${oppNeedles[id] + NEEDLE_MS}">${clock(ol[id])}</em></span>`).join('')}</div>`;
+  }
+  const sigN = hn.replace(/>\d+:\d\d</g, '><').replace(/width:\d+%/g, '');
+  if (sigN !== lastN) { panN.innerHTML = hn; lastN = sigN; panN.classList.toggle('on', !!hn); }
 }
 pan.addEventListener('click', (e) => {
   const b = e.target.closest('[data-act]'); if (!b || !e.isTrusted || b === mainBtn) return;
@@ -748,6 +776,7 @@ window.addEventListener('resize', place);
 setInterval(() => {
   const els = root.querySelectorAll('[data-cd-end]'); if (!els.length) return;
   let done = false;
-  els.forEach((el) => { const s = Math.ceil((Number(el.dataset.cdEnd) - Date.now()) / 1000); if (s <= 0) done = true; else el.textContent = Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); });
+  els.forEach((el) => { const s = Math.ceil((Number(el.dataset.cdEnd) - Date.now()) / 1000); if (s <= 0) { done = true; return; } el.textContent = Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
+    const chip = el.closest('.cd-nd'); if (!chip) return; const c = 'cd-nd ' + needleCls(s); if (chip.className !== c) chip.className = c; const bar = chip.querySelector('u'); if (bar) bar.style.width = Math.round(s / 1.2) + '%'; });
   if (done) render();
 }, 1000);

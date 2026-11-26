@@ -2,6 +2,15 @@
 
 All dates are 2026. Versions before 0.14.4 were private test builds.
 
+## 0.16.5-tablet · 26 November
+
+**Combat Desk 0.6.0: needle bar**
+- Needles now have their own full-width bar under Combat Desk, with all four always in the same place: Epi (STR), Mel (SPD), Ser (DEF), Tyr (DEX).
+- Each active needle shows a large countdown and a draining bar: green, amber under 30 seconds, red under 10.
+- Needles you don't have active are shown dimmed, so you can see what's missing at a glance.
+- Your opponent's needles show at the end of the bar.
+- The bar stays visible when Combat Desk is collapsed, and only appears while a needle is active.
+
 ## 0.16.4-tablet · 26 November
 
 **War Room 1.2.1**
