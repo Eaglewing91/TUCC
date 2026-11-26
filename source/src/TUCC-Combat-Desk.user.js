@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         TUCC Combat Desk
 // @namespace    eaglewing.torn.tucc.combatdesk
-// @version      0.6.0
+// @version      0.6.1
 // @description  Attack page: one button that starts the fight, uses the right weapon for the turn and presses your finish option. One press = one action. Plans come from your own equipped weapons, their bonuses and mods, your perks, the effects on both fighters and the opponent's armour; modes pick the finishing weapon (War, Mug, Merc, Farm). Makes no requests to torn.com.
 // @author       Eaglewing [571041]
 // @match        https://www.torn.com/page.php?sid=attack&user2ID=*
@@ -679,10 +679,10 @@ function render() {
   const ib = (a, text, title, cls) => `<button type="button" class="cd-i${cls || ''}" data-act="${a}" title="${title}" aria-label="${title}">${text}</button>`;
   hr += '<div class="cd-t">' + ib('lock', S.locked ? '■' : '□', 'Lock position', ' cd-lock' + (S.locked ? ' on' : '')) + ib('grip', '✥', 'Move', ' cd-grip') + ib('set', '⚙', 'Settings') + ib('open', S.open ? '▴' : '▾', S.open ? 'Collapse' : 'Expand') + '</div>';
   if (hl + hr !== lastHtml) { panL.innerHTML = hl; panR.innerHTML = hr; lastHtml = hl + hr; }
-  // Needle bar: all four needles in one row, lit with a countdown while active on you. Shown even when collapsed.
+  // Needle bar: all four needles in one row, always shown (even when collapsed); lit with a countdown while active on you.
   const nl = needlesLeft(ACTIVE), ol = needlesLeft(oppNeedles), clock = (sec) => Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '0');
   let hn = '';
-  if (Object.keys(nl).length || Object.keys(ol).length) {
+  {
     hn = Object.keys(NEEDLES).map((id) => { const left = nl[id], end = ACTIVE[id] + NEEDLE_MS;
       return left ? `<div class="cd-nd ${needleCls(left)}" title="${esc(NEEDLES[id])}"><b>${esc(NEEDLES_SHORT[id])}</b><i>${NEEDLE_STAT[id]}</i><em data-cd-end="${end}">${clock(left)}</em><u style="width:${Math.round(left / 1.2)}%"></u></div>`
         : `<div class="cd-nd off" title="${esc(NEEDLES[id])}"><b>${esc(NEEDLES_SHORT[id])}</b><i>${NEEDLE_STAT[id]}</i><em>–</em></div>`; }).join('');

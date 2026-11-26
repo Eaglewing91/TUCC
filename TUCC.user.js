@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Torn Ultimate Command Centre [TUCC]
 // @namespace    eaglewing.torn.tucc
-// @version      0.16.5-tablet
+// @version      0.16.6-tablet
 // @description  One install for Eaglewing's Torn tools: Travel 2.Dough, Torn Pulse, Attack Hybrid Ultimate, Combat Desk, RW Energy Guard, OC Command Centre, Recruiting Mastered, OpenMarket (Enhanced), Torn Spectrum, Medal Detector, Lockpick, Cash Desk, Item Pins, Ranked Notes, plus War Room, Crimes Analyst, Company Manager, Market Watcher, Big Al's Watch and Defib. One API engine (shared budget, shared responses, pause on API errors, key in a header), one alerts centre and one TUCC page, opened from its own row in Torn's Areas list. Each module can be switched off.
 // @author       Eaglewing [571041]
 // @match        https://www.torn.com/*
@@ -108,7 +108,7 @@
 const TUCC = (() => {
   'use strict';
   const T_START = performance.now();                          // ms from the page starting to load until Tampermonkey ran TUCC
-  const VERSION = (typeof GM_info !== 'undefined' && GM_info.script && GM_info.script.version) || "0.16.5-tablet";
+  const VERSION = (typeof GM_info !== 'undefined' && GM_info.script && GM_info.script.version) || "0.16.6-tablet";
   const CORE = 'tucc_core:';
   const modules = [];
   const state = {}; // id -> { status, error, menus: [] }
@@ -23051,8 +23051,8 @@ if (w.wasOpen()) w.open();
 
 });
 
-/* ===================== MODULE: Combat Desk v0.6.0 (original script; TUCC changes listed in the build notes) ===================== */
-TUCC.register({"id": "combatdesk", "where": "attack pages", "inline": true, "defaultOn": false, "name": "Combat Desk", "short": "Combat Desk", "runAt": "end", "native": true, "desc": "Attack page: one button that starts the fight, uses the right weapon for the turn and presses your finish option. One press = one action. Plans are built from your own equipped weapons, their bonuses and mods, the effects on both fighters, the action log and the opponent's armour; needles go first; War Farm, War Push, Mug, Merc and Farm modes pick the finishing weapon and finish option; needles active on you are shown with their time left. With a key it also reads your perks and weapon types and names armour pieces (Torn API). Off by default; while it is on, Attack Hybrid Ultimate steps aside. Makes no requests to torn.com.", "keyStore": "api_key", "keyLevel": "Optional: Minimal (perks and equipped weapon stats)", "version": "0.6.0", "matches": ["https://www.torn.com/page.php?sid=attack&user2ID=*", "https://www.torn.com/loader.php?sid=attack&user2ID=*"]}, function (GM_getValue, GM_setValue, GM_deleteValue, GM_listValues, GM_xmlhttpRequest, GM_addStyle, GM_registerMenuCommand, GM_notification, GM, GM_info, unsafeWindow, window, XMLHttpRequest, fetch, tucc, alert, confirm, prompt) {
+/* ===================== MODULE: Combat Desk v0.6.1 (original script; TUCC changes listed in the build notes) ===================== */
+TUCC.register({"id": "combatdesk", "where": "attack pages", "inline": true, "defaultOn": false, "name": "Combat Desk", "short": "Combat Desk", "runAt": "end", "native": true, "desc": "Attack page: one button that starts the fight, uses the right weapon for the turn and presses your finish option. One press = one action. Plans are built from your own equipped weapons, their bonuses and mods, the effects on both fighters, the action log and the opponent's armour; needles go first; War Farm, War Push, Mug, Merc and Farm modes pick the finishing weapon and finish option; needles active on you are shown with their time left. With a key it also reads your perks and weapon types and names armour pieces (Torn API). Off by default; while it is on, Attack Hybrid Ultimate steps aside. Makes no requests to torn.com.", "keyStore": "api_key", "keyLevel": "Optional: Minimal (perks and equipped weapon stats)", "version": "0.6.1", "matches": ["https://www.torn.com/page.php?sid=attack&user2ID=*", "https://www.torn.com/loader.php?sid=attack&user2ID=*"]}, function (GM_getValue, GM_setValue, GM_deleteValue, GM_listValues, GM_xmlhttpRequest, GM_addStyle, GM_registerMenuCommand, GM_notification, GM, GM_info, unsafeWindow, window, XMLHttpRequest, fetch, tucc, alert, confirm, prompt) {
 
 /*
  * Compliance notes
@@ -23722,10 +23722,10 @@ function render() {
   const ib = (a, text, title, cls) => `<button type="button" class="cd-i${cls || ''}" data-act="${a}" title="${title}" aria-label="${title}">${text}</button>`;
   hr += '<div class="cd-t">' + ib('lock', S.locked ? '■' : '□', 'Lock position', ' cd-lock' + (S.locked ? ' on' : '')) + ib('grip', '✥', 'Move', ' cd-grip') + ib('set', '⚙', 'Settings') + ib('open', S.open ? '▴' : '▾', S.open ? 'Collapse' : 'Expand') + '</div>';
   if (hl + hr !== lastHtml) { panL.innerHTML = hl; panR.innerHTML = hr; lastHtml = hl + hr; }
-  // Needle bar: all four needles in one row, lit with a countdown while active on you. Shown even when collapsed.
+  // Needle bar: all four needles in one row, always shown (even when collapsed); lit with a countdown while active on you.
   const nl = needlesLeft(ACTIVE), ol = needlesLeft(oppNeedles), clock = (sec) => Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '0');
   let hn = '';
-  if (Object.keys(nl).length || Object.keys(ol).length) {
+  {
     hn = Object.keys(NEEDLES).map((id) => { const left = nl[id], end = ACTIVE[id] + NEEDLE_MS;
       return left ? `<div class="cd-nd ${needleCls(left)}" title="${esc(NEEDLES[id])}"><b>${esc(NEEDLES_SHORT[id])}</b><i>${NEEDLE_STAT[id]}</i><em data-cd-end="${end}">${clock(left)}</em><u style="width:${Math.round(left / 1.2)}%"></u></div>`
         : `<div class="cd-nd off" title="${esc(NEEDLES[id])}"><b>${esc(NEEDLES_SHORT[id])}</b><i>${NEEDLE_STAT[id]}</i><em>–</em></div>`; }).join('');

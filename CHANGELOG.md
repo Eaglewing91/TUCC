@@ -2,6 +2,11 @@
 
 All dates are 2026. Versions before 0.14.4 were private test builds.
 
+## 0.16.6-tablet · 26 November
+
+**Combat Desk 0.6.1**
+- The needle bar is now always shown on the attack page, with all four needles dimmed until one is active.
+
 ## 0.16.5-tablet · 26 November
 
 **Combat Desk 0.6.0: needle bar**
