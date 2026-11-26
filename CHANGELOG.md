@@ -2,6 +2,12 @@
 
 All dates are 2026. Versions before 0.14.4 were private test builds.
 
+## 0.16.7-tablet · 26 November
+
+**Combat Desk removed**
+- Combat Desk is no longer part of TUCC. Its saved settings are cleared automatically.
+- Attack Hybrid Ultimate is unaffected and no longer pauses for it.
+
 ## 0.16.6-tablet · 26 November
 
 **Combat Desk 0.6.1**

@@ -13,7 +13,7 @@ MODULES = [
        desc='Travel 2.0 trip planner (with hunting for South Africa trips): best trips, exports and imports, live prices, bazaars, Travel Agency and market badges.',
        keyStore='ttp_api_key', keyLevel='Public (Minimal adds travel status, energy, cooldowns, perks, your Business Class Ticket count and hunting skill; Limited adds exact restock times from your Stock Analysis reports)',
        tos={'external': 'Travel 2.Dough: foreign stock from <a href="https://prombot.co.uk/" target="_blank" rel="noopener">Prometheus</a>, <a href="https://torn-intel.com/" target="_blank" rel="noopener">TornIntel</a> and <a href="https://yata.yt/" target="_blank" rel="noopener">YATA</a>; bazaar prices from <a href="https://weav3r.dev/" target="_blank" rel="noopener">TornW3B</a>'}),
-  dict(id='hybrid', where='attack pages',  inline=True, file='Attack-Hybrid-Ultimate-3.7.3.user.js', name='Attack Hybrid Ultimate', short='Hybrid', runAt='end', yieldTo='combatdesk',
+  dict(id='hybrid', where='attack pages',  inline=True, file='Attack-Hybrid-Ultimate-3.7.3.user.js', name='Attack Hybrid Ultimate', short='Hybrid', runAt='end',
        desc='Attack page: drag Torn\'s attack buttons and weapon bar anywhere; keys 1-4; one press = one action; shows only your chosen Leave / Mug / Hosp. Based on scripts by olesien [2187764].', keyLevel='None'),
   dict(id='recruit', where='the User List', home='/page.php?sid=UserList',  launch=dict(menu='Settings / API key', hide='#rm-fab', icon='✉', hint='Working stats settings'), file='Recruiting-Mastered-0.1.9.user.js', name='Recruiting Mastered (Experimental)', short='Recruiting', runAt='idle',
        desc='User List and company pages: Working Stats badge, local Contacted tick and one-click mail icon per player.',
@@ -63,9 +63,6 @@ MODULES = [
   dict(id='defib', where='the hospital', home='/hospitalview.php',  launch=dict(menu='Open Defib', icon='✚', hint='Revive chances and clients'), file='TUCC-Defib.user.js', name='Defib: Hospital Revive HUD', short='Defib', runAt='idle', native=True,
        desc='Hospital page, in the style of Lockpick: your revive chance on every patient, energy and revives left, one-press Best Revive / Best Client (one press = one click on that row\'s own Revive link; you confirm), a chance floor, client alerts, billing from Torn\'s revive records, and a formula that tunes itself to the chances Torn recorded.',
        keyStore='api_key', keyLevel='Limited (faction API access for faction mates\' exact chances, the fit and faction alerts)'),
-  dict(id='combatdesk', where='attack pages', inline=True, defaultOn=False, file='TUCC-Combat-Desk.user.js', name='Combat Desk', short='Combat Desk', runAt='end', native=True,
-       desc='Attack page: one button that starts the fight, uses the right weapon for the turn and presses your finish option. One press = one action. Plans are built from your own equipped weapons, their bonuses and mods, the effects on both fighters, the action log and the opponent\'s armour; needles go first; War Farm, War Push, Mug, Merc and Farm modes pick the finishing weapon and finish option; needles active on you are shown with their time left. With a key it also reads your perks and weapon types and names armour pieces (Torn API). Off by default; while it is on, Attack Hybrid Ultimate steps aside. Makes no requests to torn.com.',
-       keyStore='api_key', keyLevel='Optional: Minimal (perks and equipped weapon stats)'),
 ]
 
 def split_header(text):
@@ -102,7 +99,7 @@ header = f"""// ==UserScript==
 // @name         Torn Ultimate Command Centre [TUCC]
 // @namespace    eaglewing.torn.tucc
 // @version      {VERSION}
-// @description  One install for Eaglewing's Torn tools: Travel 2.Dough, Torn Pulse, Attack Hybrid Ultimate, Combat Desk, RW Energy Guard, OC Command Centre, Recruiting Mastered, OpenMarket (Enhanced), Torn Spectrum, Medal Detector, Lockpick, Cash Desk, Item Pins, Ranked Notes, plus War Room, Crimes Analyst, Company Manager, Market Watcher, Big Al's Watch and Defib. One API engine (shared budget, shared responses, pause on API errors, key in a header), one alerts centre and one TUCC page, opened from its own row in Torn's Areas list. Each module can be switched off.
+// @description  One install for Eaglewing's Torn tools: Travel 2.Dough, Torn Pulse, Attack Hybrid Ultimate, RW Energy Guard, OC Command Centre, Recruiting Mastered, OpenMarket (Enhanced), Torn Spectrum, Medal Detector, Lockpick, Cash Desk, Item Pins, Ranked Notes, plus War Room, Crimes Analyst, Company Manager, Market Watcher, Big Al's Watch and Defib. One API engine (shared budget, shared responses, pause on API errors, key in a header), one alerts centre and one TUCC page, opened from its own row in Torn's Areas list. Each module can be switched off.
 // @author       Eaglewing [571041]
 // @match        https://www.torn.com/*
 // @run-at       document-start
@@ -148,7 +145,7 @@ header = f"""// ==UserScript==
  * Terms of Service (also shown in the TUCC panel, API key & ToS tab)
  * ------------------------------------------------------------------
  * Data Storage:          Only locally, in your userscript manager, plus this browser's storage for a few modules
- *                        (Attack Hybrid Ultimate's layout, Combat Desk's settings and sequences, Cash Desk's presets, Torn Spectrum's settings, OpenMarket's
+ *                        (Attack Hybrid Ultimate's layout, Cash Desk's presets, Torn Spectrum's settings, OpenMarket's
  *                        filter, Ranked Notes' notes, Item Pins' pins, TORN Auction Price Checker's settings and recent
  *                        searches, OC Command Centre's join-audit history). Each module keeps its own cache and settings.
  *                        OpenMarket keeps item market listings in memory only, never saved.

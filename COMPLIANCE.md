@@ -1,8 +1,8 @@
 # TUCC compliance record
 
-First full check: v0.10.7-tablet (2 November 2026). Last updated: **v0.16.6-tablet (26 November 2026)**.
+First full check: v0.10.7-tablet (2 November 2026). Last updated: **v0.16.7-tablet (26 November 2026)**.
 
-## Current status: v0.16.6
+## Current status: v0.16.7
 
 | Check (tested on 10 mock Torn pages, 5 simulated minutes each, every module on) | Result |
 |---|---|
@@ -12,9 +12,8 @@ First full check: v0.10.7-tablet (2 November 2026). Last updated: **v0.16.6-tabl
 | Torn API calls | Through one engine, 60 a minute by default. Key in a request header on API v2; in the address on API v1, still used by Lockpick, Torn Pulse, Medal Detector, Company Manager and Market Watcher. |
 | Hidden tabs | No API calls from any module while the tab is hidden (0 in 5 simulated minutes on every page). Each checks once when you come back to the tab. |
 | Torn says slow down | An API error for too many requests, or an HTTP 429, 502, 503 or 504 reply, pauses every module and tab (60 seconds for 429, 30 for the others, longer if Torn's reply says so). |
-| Combat Desk (new, off by default) | Tested on a mock attack page: nothing is pressed without input; each real press passes exactly one click to one of Torn's own controls (Start fight, one weapon, or the finish option); script-made clicks are ignored; a held key gives one action; it makes no requests to torn.com. With a key it makes two Torn API reads (user/perks, user/equipment) when the attack page opens and the tab is visible, plus one torn/{ids}/items read to name armour pieces it has not seen before (saved, so each piece is asked once), all through the shared engine. Torn's own Start fight box is hidden while Combat Desk shows (visual only). It reads effect icons, the action log and the opponent's panel on the page you are viewing; it saves the weapons and armour last seen on up to 150 opponents, on your device only. Not yet tested on a live fight. While it is on, Attack Hybrid Ultimate does not run. |
 | War Room BSP stats column (new, off by default) | Tested with and without BSP data present: reads Battle Stats Predictor's saved predictions from the browser's storage for torn.com; makes no request for it; leaves that data unchanged; does not read the BSP key; copies nothing into TUCC's storage. Offered only when BSP is set up in the browser. |
-| Modules | 21. Removed since the first check: Stock Ledger, Mugger Manager, Attack Interceptor Pro, Armoury & Vault Tracker (their saved data is cleared automatically). Added: TORN Auction Price Checker, Big Al's Watch, Defib, Combat Desk. |
+| Modules | 20. Removed since the first check: Stock Ledger, Mugger Manager, Attack Interceptor Pro, Armoury & Vault Tracker, Combat Desk (their saved data is cleared automatically). Added: TORN Auction Price Checker, Big Al's Watch, Defib. |
 
 ### Torn PDA (new in v0.14.0)
 
