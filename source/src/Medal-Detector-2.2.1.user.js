@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Medal Detector
 // @namespace    eaglewing91.torn.medaldetector
-// @version      2.2.0
+// @version      2.2.1
 // @description  Track every Torn honour and medal, see your next award for each stat, and set daily goals towards them. Uses only the official Torn API.
 // @author       Eaglewing [571041]
 // @license      MIT
@@ -1256,6 +1256,27 @@
     render();
   }
 
+  // Torn's class names have changing hash suffixes, so rows are found by their links instead.
+  // Torn only shows the Merits row while you have merits to spend. With none, the row goes
+  // where Merits would be: under Points, or failing that under the last row of that block.
+  function sidebarAnchor() {
+    const merits = document.querySelector('a[href*="sid=awards"][href*="tab=merits"]');
+    if (merits && merits.closest('p')) return { row: merits.closest('p'), link: merits, merits: true };
+    const points = document.querySelector('p a[href*="sid=points"], p a[href*="points.php"]');
+    const money = document.getElementById('user-money');
+    let row = (points && points.closest('p')) || (money && money.closest('p'));
+    if (!row) return null;
+    // step past any further rows of the same kind, so ours is the last in the block
+    while (row.nextElementSibling && row.nextElementSibling.tagName === 'P' && row.nextElementSibling.className === row.className && !row.nextElementSibling.id) row = row.nextElementSibling;
+    return { row, link: row.querySelector('a') || (points && points.closest('p').querySelector('a')), merits: false };
+  }
+  // If the Merits row shows up later (you earned a merit), move ours back under it.
+  function keepUnderMerits() {
+    const entry = document.getElementById(SIDEBAR_ID), a = sidebarAnchor();
+    if (!entry || !a || !a.merits || a.row.nextElementSibling === entry) return;
+    a.row.after(entry);
+    const box = document.getElementById(SIDEBAR_GOALS_ID); if (box) entry.after(box);
+  }
   function mountSidebar() {
     if (loadSettings().button === 'floating') {
       const old = document.getElementById(SIDEBAR_ID);
@@ -1264,11 +1285,10 @@
       if (oldGoals) oldGoals.remove();
       return false;
     }
-    if (document.getElementById(SIDEBAR_ID)) { sidebarFound = true; return true; }
-    // Torn's class names have changing hash suffixes, so find the Merits row by its link instead.
-    const useLink = document.querySelector('a[href*="sid=awards"][href*="tab=merits"]');
-    const row = useLink && useLink.closest('p');
-    if (!row) return false;
+    if (document.getElementById(SIDEBAR_ID)) { sidebarFound = true; keepUnderMerits(); return true; }
+    const found = sidebarAnchor();
+    if (!found) return false;
+    const row = found.row, useLink = found.link || { className: '' };
     const spans = row.querySelectorAll('span');
     const entry = document.createElement('p');
     entry.id = SIDEBAR_ID;
@@ -1378,7 +1398,8 @@
       pending = true;
       setTimeout(() => {
         pending = false;
-        if (loadSettings().button === 'floating' || document.getElementById(SIDEBAR_ID)) return;
+        if (loadSettings().button === 'floating') return;
+        if (document.getElementById(SIDEBAR_ID)) { keepUnderMerits(); return; }
         if (mountSidebar()) render(true);
       }, 100);
     }).observe(document.body, { childList: true, subtree: true });

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Torn Ultimate Command Centre [TUCC]
 // @namespace    eaglewing.torn.tucc
-// @version      0.16.3-tablet
+// @version      0.16.4-tablet
 // @description  One install for Eaglewing's Torn tools: Travel 2.Dough, Torn Pulse, Attack Hybrid Ultimate, Combat Desk, RW Energy Guard, OC Command Centre, Recruiting Mastered, OpenMarket (Enhanced), Torn Spectrum, Medal Detector, Lockpick, Cash Desk, Item Pins, Ranked Notes, plus War Room, Crimes Analyst, Company Manager, Market Watcher, Big Al's Watch and Defib. One API engine (shared budget, shared responses, pause on API errors, key in a header), one alerts centre and one TUCC page, opened from its own row in Torn's Areas list. Each module can be switched off.
 // @author       Eaglewing [571041]
 // @match        https://www.torn.com/*
@@ -108,7 +108,7 @@
 const TUCC = (() => {
   'use strict';
   const T_START = performance.now();                          // ms from the page starting to load until Tampermonkey ran TUCC
-  const VERSION = (typeof GM_info !== 'undefined' && GM_info.script && GM_info.script.version) || "0.16.3-tablet";
+  const VERSION = (typeof GM_info !== 'undefined' && GM_info.script && GM_info.script.version) || "0.16.4-tablet";
   const CORE = 'tucc_core:';
   const modules = [];
   const state = {}; // id -> { status, error, menus: [] }
@@ -13207,8 +13207,8 @@ TUCC.register({"id": "openmarket", "where": "the Item Market, auctions and bazaa
 
 });
 
-/* ===================== MODULE: Medal Detector v2.2.0 (original script; TUCC changes listed in the build notes) ===================== */
-TUCC.register({"id": "medals", "where": "every page", "launch": {"host": "medal-detector-root", "hide": ".fab", "menu": "Open Medal Detector", "icon": "★", "hint": "Honours, medals and goals"}, "name": "Medal Detector", "short": "Medals", "runAt": "idle", "desc": "Every honour and medal, your next award for each stat, and daily goals towards them (Torn API only).", "keyStore": "mh_key", "keyLevel": "Limited", "version": "2.2.0", "matches": ["https://www.torn.com/*"]}, function (GM_getValue, GM_setValue, GM_deleteValue, GM_listValues, GM_xmlhttpRequest, GM_addStyle, GM_registerMenuCommand, GM_notification, GM, GM_info, unsafeWindow, window, XMLHttpRequest, fetch, tucc, alert, confirm, prompt) {
+/* ===================== MODULE: Medal Detector v2.2.1 (original script; TUCC changes listed in the build notes) ===================== */
+TUCC.register({"id": "medals", "where": "every page", "launch": {"host": "medal-detector-root", "hide": ".fab", "menu": "Open Medal Detector", "icon": "★", "hint": "Honours, medals and goals"}, "name": "Medal Detector", "short": "Medals", "runAt": "idle", "desc": "Every honour and medal, your next award for each stat, and daily goals towards them (Torn API only).", "keyStore": "mh_key", "keyLevel": "Limited", "version": "2.2.1", "matches": ["https://www.torn.com/*"]}, function (GM_getValue, GM_setValue, GM_deleteValue, GM_listValues, GM_xmlhttpRequest, GM_addStyle, GM_registerMenuCommand, GM_notification, GM, GM_info, unsafeWindow, window, XMLHttpRequest, fetch, tucc, alert, confirm, prompt) {
 
 /*
  * Medal Detector v2.2.0
@@ -14446,6 +14446,27 @@ TUCC.register({"id": "medals", "where": "every page", "launch": {"host": "medal-
     render();
   }
 
+  // Torn's class names have changing hash suffixes, so rows are found by their links instead.
+  // Torn only shows the Merits row while you have merits to spend. With none, the row goes
+  // where Merits would be: under Points, or failing that under the last row of that block.
+  function sidebarAnchor() {
+    const merits = document.querySelector('a[href*="sid=awards"][href*="tab=merits"]');
+    if (merits && merits.closest('p')) return { row: merits.closest('p'), link: merits, merits: true };
+    const points = document.querySelector('p a[href*="sid=points"], p a[href*="points.php"]');
+    const money = document.getElementById('user-money');
+    let row = (points && points.closest('p')) || (money && money.closest('p'));
+    if (!row) return null;
+    // step past any further rows of the same kind, so ours is the last in the block
+    while (row.nextElementSibling && row.nextElementSibling.tagName === 'P' && row.nextElementSibling.className === row.className && !row.nextElementSibling.id) row = row.nextElementSibling;
+    return { row, link: row.querySelector('a') || (points && points.closest('p').querySelector('a')), merits: false };
+  }
+  // If the Merits row shows up later (you earned a merit), move ours back under it.
+  function keepUnderMerits() {
+    const entry = document.getElementById(SIDEBAR_ID), a = sidebarAnchor();
+    if (!entry || !a || !a.merits || a.row.nextElementSibling === entry) return;
+    a.row.after(entry);
+    const box = document.getElementById(SIDEBAR_GOALS_ID); if (box) entry.after(box);
+  }
   function mountSidebar() {
     if (loadSettings().button === 'floating') {
       const old = document.getElementById(SIDEBAR_ID);
@@ -14454,11 +14475,10 @@ TUCC.register({"id": "medals", "where": "every page", "launch": {"host": "medal-
       if (oldGoals) oldGoals.remove();
       return false;
     }
-    if (document.getElementById(SIDEBAR_ID)) { sidebarFound = true; return true; }
-    // Torn's class names have changing hash suffixes, so find the Merits row by its link instead.
-    const useLink = document.querySelector('a[href*="sid=awards"][href*="tab=merits"]');
-    const row = useLink && useLink.closest('p');
-    if (!row) return false;
+    if (document.getElementById(SIDEBAR_ID)) { sidebarFound = true; keepUnderMerits(); return true; }
+    const found = sidebarAnchor();
+    if (!found) return false;
+    const row = found.row, useLink = found.link || { className: '' };
     const spans = row.querySelectorAll('span');
     const entry = document.createElement('p');
     entry.id = SIDEBAR_ID;
@@ -14568,7 +14588,8 @@ TUCC.register({"id": "medals", "where": "every page", "launch": {"host": "medal-
       pending = true;
       setTimeout(() => {
         pending = false;
-        if (loadSettings().button === 'floating' || document.getElementById(SIDEBAR_ID)) return;
+        if (loadSettings().button === 'floating') return;
+        if (document.getElementById(SIDEBAR_ID)) { keepUnderMerits(); return; }
         if (mountSidebar()) render(true);
       }, 100);
     }).observe(document.body, { childList: true, subtree: true });
@@ -21358,8 +21379,8 @@ TUCC.register({"id": "pricecheck", "where": "ranked war items: auction house, It
 
 });
 
-/* ===================== MODULE: War Room v1.2.0 (original script; TUCC changes listed in the build notes) ===================== */
-TUCC.register({"id": "warroom", "where": "every page", "launch": {"menu": "Open War Room", "icon": "⚔", "hint": "Ranked war overview"}, "name": "War Room", "short": "War Room", "runAt": "idle", "native": true, "desc": "Ranked war overview: enemy members by status with hospital timers, who is out next, both chains, and a chain-timeout alert. Names link to attack pages; you click.", "keyStore": "api_key", "keyLevel": "Public", "version": "1.2.0", "matches": ["https://www.torn.com/*"]}, function (GM_getValue, GM_setValue, GM_deleteValue, GM_listValues, GM_xmlhttpRequest, GM_addStyle, GM_registerMenuCommand, GM_notification, GM, GM_info, unsafeWindow, window, XMLHttpRequest, fetch, tucc, alert, confirm, prompt) {
+/* ===================== MODULE: War Room v1.2.1 (original script; TUCC changes listed in the build notes) ===================== */
+TUCC.register({"id": "warroom", "where": "every page", "launch": {"menu": "Open War Room", "icon": "⚔", "hint": "Ranked war overview"}, "name": "War Room", "short": "War Room", "runAt": "idle", "native": true, "desc": "Ranked war overview: enemy members by status with hospital timers, who is out next, both chains, and a chain-timeout alert. Names link to attack pages; you click.", "keyStore": "api_key", "keyLevel": "Public", "version": "1.2.1", "matches": ["https://www.torn.com/*"]}, function (GM_getValue, GM_setValue, GM_deleteValue, GM_listValues, GM_xmlhttpRequest, GM_addStyle, GM_registerMenuCommand, GM_notification, GM, GM_info, unsafeWindow, window, XMLHttpRequest, fetch, tucc, alert, confirm, prompt) {
 
 /*
  * Compliance notes
@@ -21538,7 +21559,7 @@ function render() {
     const counts = { okay: 0, hospital: 0, travel: 0, jail: 0, online: 0 };
     ms.forEach((m) => { counts[group(m)] = (counts[group(m)] || 0) + 1; if (online(m) === 'online') counts.online++; });
     if (next.length) html += `<div class="card"><b style="font-size:12px">Out of hospital next</b><div class="row" style="margin-top:4px">${next.map((m) => `<span>${atk(m)} <span class="muted" data-until="${m.status.until}">${fmt.dur(m.status.until - nowS())}</span></span>`).join(' · ')}</div></div>`;
-    html += `<div class="row" style="margin-bottom:6px"><span class="muted">Refresh</span>${[[30, '30s'], [5, '5s'], [1, '1s']].map(([v, l]) => `<button type="button" class="b${S.speed === v ? ' pri' : ''}" data-speed="${v}" title="${v === 30 ? 'Lightest on the API' : v === 5 ? '12 API calls a minute' : '60 API calls a minute'}">${l}</button>`).join('')}${slowAt && Date.now() - slowAt < 20000 ? '<span class="warn">Slowed: API budget full</span>' : ''}</div>`;
+    html += `<div class="row" style="margin-bottom:6px"><span class="muted">Refresh</span>${[[1, '1s'], [5, '5s'], [30, '30s']].map(([v, l]) => `<button type="button" class="b${S.speed === v ? ' pri' : ''}" data-speed="${v}" title="${v === 30 ? 'Lightest on the API' : v === 5 ? '12 API calls a minute' : '60 API calls a minute'}">${l}</button>`).join('')}${slowAt && Date.now() - slowAt < 20000 ? '<span class="warn">Slowed: API budget full</span>' : ''}</div>`;
     html += `<div class="row" style="margin-bottom:6px">${filters.map(([k, l]) => `<button type="button" class="b${S.filter === k ? ' pri' : ''}" data-filter="${k}">${l}${k === 'all' ? ` ${ms.length}` : counts[k] != null ? ` ${counts[k]}` : ''}</button>`).join('')}</div>`;
     let shown = sorted(ms).filter((m) => S.filter === 'all' || (S.filter === 'online' ? online(m) === 'online' : group(m) === S.filter));
     const here = bspHere(), col = here && S.bsp, mine = col ? myTotal() : 0, st = {};

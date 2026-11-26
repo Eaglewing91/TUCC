@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         TUCC War Room
 // @namespace    eaglewing.torn.tucc.warroom
-// @version      1.2.0
+// @version      1.2.1
 // @description  Ranked war overview: enemy members by status with hospital timers, who is out next, both chains, and an optional chain-timeout alert. Names are plain links to attack pages that you click yourself. API only (Public key).
 // @author       Eaglewing [571041]
 // @match        https://www.torn.com/*
@@ -187,7 +187,7 @@ function render() {
     const counts = { okay: 0, hospital: 0, travel: 0, jail: 0, online: 0 };
     ms.forEach((m) => { counts[group(m)] = (counts[group(m)] || 0) + 1; if (online(m) === 'online') counts.online++; });
     if (next.length) html += `<div class="card"><b style="font-size:12px">Out of hospital next</b><div class="row" style="margin-top:4px">${next.map((m) => `<span>${atk(m)} <span class="muted" data-until="${m.status.until}">${fmt.dur(m.status.until - nowS())}</span></span>`).join(' · ')}</div></div>`;
-    html += `<div class="row" style="margin-bottom:6px"><span class="muted">Refresh</span>${[[30, '30s'], [5, '5s'], [1, '1s']].map(([v, l]) => `<button type="button" class="b${S.speed === v ? ' pri' : ''}" data-speed="${v}" title="${v === 30 ? 'Lightest on the API' : v === 5 ? '12 API calls a minute' : '60 API calls a minute'}">${l}</button>`).join('')}${slowAt && Date.now() - slowAt < 20000 ? '<span class="warn">Slowed: API budget full</span>' : ''}</div>`;
+    html += `<div class="row" style="margin-bottom:6px"><span class="muted">Refresh</span>${[[1, '1s'], [5, '5s'], [30, '30s']].map(([v, l]) => `<button type="button" class="b${S.speed === v ? ' pri' : ''}" data-speed="${v}" title="${v === 30 ? 'Lightest on the API' : v === 5 ? '12 API calls a minute' : '60 API calls a minute'}">${l}</button>`).join('')}${slowAt && Date.now() - slowAt < 20000 ? '<span class="warn">Slowed: API budget full</span>' : ''}</div>`;
     html += `<div class="row" style="margin-bottom:6px">${filters.map(([k, l]) => `<button type="button" class="b${S.filter === k ? ' pri' : ''}" data-filter="${k}">${l}${k === 'all' ? ` ${ms.length}` : counts[k] != null ? ` ${counts[k]}` : ''}</button>`).join('')}</div>`;
     let shown = sorted(ms).filter((m) => S.filter === 'all' || (S.filter === 'online' ? online(m) === 'online' : group(m) === S.filter));
     const here = bspHere(), col = here && S.bsp, mine = col ? myTotal() : 0, st = {};

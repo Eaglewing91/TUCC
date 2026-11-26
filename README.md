@@ -2,7 +2,7 @@
 
 One userscript for Torn that bundles Eaglewing's Torn tools (20 modules, including WinterValor's TORN Auction Price Checker, with his permission) behind one key screen, one dark theme (in five accent colours: Red, Blue, Purple, Teal and Graphite) and one shared Torn API engine.
 
-Version **0.16.3-tablet** · by **Eaglewing [571041]** · licence **GPL-3.0-or-later** · for Tampermonkey and Torn PDA (PDA support is new; 0.14.5 fixes a fault that stopped TUCC loading in PDA at all).
+Version **0.16.4-tablet** · by **Eaglewing [571041]** · licence **GPL-3.0-or-later** · for Tampermonkey and Torn PDA (PDA support is new; 0.14.5 fixes a fault that stopped TUCC loading in PDA at all).
 
 **[Install TUCC](https://raw.githubusercontent.com/Eaglewing91/TUCC/main/TUCC.user.js)** · [Changelog](CHANGELOG.md) · [Terms of Service](TOS.md) · [Compliance record](COMPLIANCE.md) · [Credits](CREDITS.md)
 
@@ -82,8 +82,8 @@ These never call the Torn API and need no key. They work only with the page you 
 | **OC Command Centre** | 4.3.2 | every page | Minimal (faction API access for the live overview) | Faction organised crimes: live overview, CPR helpers on the crimes page, item costs and reports. |
 | **Torn Pulse** | 2.11.0 | every page | Limited | Advisor and alerts: cooldown, booster and medical alerts, unused refills before the Torn day ends, growth advice, and gym training with Baldr's, Hank's or a custom stat ratio (Steadfast and other perks included, specialist gyms guarded, only gyms you have unlocked). |
 | **RW Energy Guard** | 0.4.0 | the gym | Public | Gym: asks you to confirm before training while your faction has a ranked war pending, to protect stacked energy. |
-| **Medal Detector** | 2.2.0 | every page | Limited | Every honour and medal, your next award for each stat, and daily goals towards them (Torn API only). |
-| **War Room** | 1.2.0 | every page | Public | Ranked war overview: enemy members by status with hospital timers, who is out next, both chains, and a chain-timeout alert. Names link to attack pages; you click. Refreshes every 30 seconds, 5 seconds or 1 second (your choice) while open. Optional **BSP stats** column for players who run Battle Stats Predictor: it shows the predictions BSP has saved in your browser (read only; no request to BSP). |
+| **Medal Detector** | 2.2.1 | every page | Limited | Every honour and medal, your next award for each stat, and daily goals towards them (Torn API only). |
+| **War Room** | 1.2.1 | every page | Public | Ranked war overview: enemy members by status with hospital timers, who is out next, both chains, and a chain-timeout alert. Names link to attack pages; you click. Refreshes every 30 seconds, 5 seconds or 1 second (your choice) while open. Optional **BSP stats** column for players who run Battle Stats Predictor: it shows the predictions BSP has saved in your browser (read only; no request to BSP). |
 | **Crimes Analyst** | 1.0.0 | the Crimes page | Minimal | Crimes page: success rate, skill, money per nerve and critical fails for every crime type, from your own crime stats. |
 | **Company Manager** | 1.0.0 | your company page | Limited (director for full detail) | Company page: employee effectiveness, inactivity and addiction flags, working stats, wages, and company funds, popularity and trains. |
 | **Market Watcher** | 1.0.0 | every page | Public | Watch items and stocks against your target prices and get an alert when they hit. Items are checked every 30 minutes, since Torn updates item market data about once an hour. Read-only: buying and selling stay manual. |

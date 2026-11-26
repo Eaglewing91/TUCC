@@ -2,6 +2,14 @@
 
 All dates are 2026. Versions before 0.14.4 were private test builds.
 
+## 0.16.4-tablet · 26 November
+
+**War Room 1.2.1**
+- Refresh buttons now read 1s / 5s / 30s, fastest first.
+
+**Medal Detector 2.2.1**
+- The sidebar row now stays in the sidebar when you have no merits to spend. Torn hides its Merits row then, so the row sits under Points instead, and moves back under Merits when that row returns.
+
 ## 0.16.3-tablet · 25 November
 
 **War Room 1.2.0: refresh speed**
